@@ -1,0 +1,272 @@
+// Engineering / Master Systems Display view.
+// Wildcard sub: coldorbit/output/engineering/+/state
+// Each arriving message calls handleEngineeringState(systemId, data) and
+// triggers a targeted DOM update — no full re-render.
+
+const SYSTEMS = {
+  weapons:   { label: "WEAPONS",   powerLabel: true  },
+  engines:   { label: "ENGINES",   powerLabel: true  },
+  ftl:       { label: "FTL DRIVE", powerLabel: true  },
+  reactor:   { label: "REACTOR",   powerLabel: false },
+  utility_1: { label: "UTIL 1",    powerLabel: true  },
+  utility_2: { label: "UTIL 2",    powerLabel: true  },
+  utility_3: { label: "UTIL 3",    powerLabel: true  },
+  utility_4: { label: "UTIL 4",    powerLabel: true  },
+  hull:      { label: "HULL",      powerLabel: false },
+};
+
+const MOCK_DAMAGE_EFFECTS = {
+  weapons: [
+    "MOCK: Fore cannon fire rate reduced by 35%",
+    "MOCK: Targeting lock time increased by 2.0s",
+    "MOCK: Volley spread increased 15°",
+  ],
+  engines: [
+    "MOCK: Max thrust reduced by 30%",
+    "MOCK: Overheat threshold lowered to 600°C",
+    "MOCK: Emergency boost unavailable",
+  ],
+  ftl: [
+    "MOCK: Jump charge time increased by 40%",
+    "MOCK: Maximum jump range reduced by 50%",
+    "MOCK: Cooldown extended to 180s",
+  ],
+  reactor: [
+    "MOCK: Total power budget reduced by 25%",
+    "MOCK: Power fluctuations every 30–90s",
+    "MOCK: Emergency shutdown possible at < 15%",
+  ],
+  utility_1: [
+    "MOCK: Fore-port hardpoint offline",
+    "MOCK: Mounted module non-functional",
+  ],
+  utility_2: [
+    "MOCK: Fore-starboard hardpoint offline",
+    "MOCK: Mounted module non-functional",
+  ],
+  utility_3: [
+    "MOCK: Aft-port hardpoint degraded",
+    "MOCK: Module power draw capped at 60%",
+  ],
+  utility_4: [
+    "MOCK: Aft-starboard hardpoint degraded",
+    "MOCK: Module power draw capped at 60%",
+  ],
+  hull: [
+    "MOCK: Structural integrity compromised",
+    "MOCK: Breach detected — sections 4-F, 5-G",
+    "MOCK: Emergency pressure doors sealed",
+  ],
+};
+
+// state[id] = { health, power_allocated, power_unit, power_max, disabled, repair_queue_position }
+const state = {};
+
+// SVG <g data-system="..."> refs
+const svgRefs = {};
+
+// Mini bar max width in SVG units
+const BAR_MAX = 38;
+
+let detailPanel = null;
+let queueList = null;
+let activeDetail = null;
+
+// ── colour helpers ──────────────────────────────────────────────────────────
+
+function healthColor(id) {
+  const s = state[id];
+  if (!s) return "var(--dim)";
+  if (s.disabled || s.health === 0) return "var(--red)";
+  if (s.health < 30) return "var(--red)";
+  if (s.health <= 70) return "var(--amber)";
+  return "var(--green)";
+}
+
+function healthPct(id) {
+  const s = state[id];
+  if (!s || s.disabled) return 0;
+  return Math.max(0, Math.min(100, s.health));
+}
+
+function healthLabel(id) {
+  const s = state[id];
+  if (!s) return "NO DATA";
+  if (s.disabled) return "DISABLED";
+  return `${s.health}%`;
+}
+
+// ── init ────────────────────────────────────────────────────────────────────
+
+export function initEngineering(root) {
+  if (!root) return;
+
+  Object.keys(SYSTEMS).forEach((id) => {
+    svgRefs[id] = root.querySelector(`[data-system="${id}"]`);
+  });
+
+  detailPanel = root.querySelector(".eng-detail");
+  queueList   = root.querySelector(".eng-queue-list");
+
+  Object.keys(SYSTEMS).forEach((id) => {
+    const el = svgRefs[id];
+    if (!el) return;
+    el.addEventListener("click", () => toggleDetail(id));
+    el.style.cursor = "pointer";
+  });
+
+  // Tap the backdrop (outside the card) to close
+  detailPanel.addEventListener("click", (e) => {
+    if (e.target === detailPanel) closeDetail();
+  });
+
+  Object.keys(SYSTEMS).forEach(renderSystem);
+  renderQueue();
+}
+
+// ── MQTT handler (called from app.js) ───────────────────────────────────────
+
+export function handleEngineeringState(systemId, data) {
+  if (!(systemId in SYSTEMS)) return;
+  state[systemId] = data;
+  renderSystem(systemId);
+  renderQueue();
+  if (activeDetail === systemId) renderDetail(systemId);
+}
+
+// ── render helpers ───────────────────────────────────────────────────────────
+
+function renderSystem(id) {
+  const el = svgRefs[id];
+  if (!el) return;
+
+  const color = healthColor(id);
+  const s = state[id];
+
+  // Color the visual fill(s) within this group
+  el.querySelectorAll(".sys-fill").forEach((shape) => {
+    shape.setAttribute("stroke", color);
+    shape.setAttribute("fill", color);
+    shape.setAttribute("fill-opacity", s ? "0.12" : "0.04");
+  });
+
+  // Hull outline gets special treatment — only stroke, fill stays transparent
+  if (id === "hull") {
+    el.querySelectorAll(".hull-line").forEach((shape) => {
+      shape.setAttribute("stroke", color);
+    });
+  }
+
+  // Mini health bar fill
+  const barFill = el.querySelector(".sys-bar-fill");
+  if (barFill) {
+    const w = Math.round((healthPct(id) / 100) * BAR_MAX);
+    barFill.setAttribute("width", String(w));
+    barFill.setAttribute("fill", color);
+  }
+
+  // Mini label text (health %)
+  const healthTxt = el.querySelector(".sys-health-text");
+  if (healthTxt) healthTxt.textContent = healthLabel(id);
+
+  // Disabled flash class on the group
+  el.classList.toggle("sys-disabled", !!(s && s.disabled));
+}
+
+function renderQueue() {
+  if (!queueList) return;
+
+  const queued = Object.entries(state)
+    .filter(([, s]) => s && s.repair_queue_position != null)
+    .sort(([, a], [, b]) => a.repair_queue_position - b.repair_queue_position);
+
+  if (queued.length === 0) {
+    queueList.innerHTML = '<div class="eng-queue-nominal">ALL SYSTEMS<br>NOMINAL</div>';
+    return;
+  }
+
+  queueList.innerHTML = queued.map(([id, s]) => {
+    const color = healthColor(id);
+    return `<div class="eng-queue-item">
+      <span class="eng-queue-pos" style="color:${color}">${s.repair_queue_position}</span>
+      <span class="eng-queue-name" style="color:${color}">${SYSTEMS[id].label}</span>
+    </div>`;
+  }).join('<div class="eng-queue-divider"></div>');
+}
+
+// ── detail panel ─────────────────────────────────────────────────────────────
+
+function toggleDetail(id) {
+  if (activeDetail === id) closeDetail();
+  else openDetail(id);
+}
+
+function openDetail(id) {
+  activeDetail = id;
+  renderDetail(id);
+  detailPanel.removeAttribute("hidden");
+}
+
+function closeDetail() {
+  activeDetail = null;
+  detailPanel.setAttribute("hidden", "");
+}
+
+function renderDetail(id) {
+  if (!detailPanel) return;
+
+  const sys  = SYSTEMS[id];
+  const s    = state[id];
+  const color = healthColor(id);
+  const pct  = healthPct(id);
+
+  let powerHtml = "";
+  if (sys.powerLabel && s && s.power_allocated != null) {
+    const powerPct = Math.round((s.power_allocated / s.power_max) * 100);
+    powerHtml = `
+      <div class="eng-det-row">
+        <span class="eng-det-lbl">POWER</span>
+        <span class="eng-det-val" style="color:var(--blue)">${s.power_allocated} ${s.power_unit || "kW"} / ${s.power_max} ${s.power_unit || "kW"}</span>
+      </div>
+      <div class="eng-det-barwrap">
+        <div class="eng-det-barfill" style="width:${powerPct}%;background:var(--blue)"></div>
+      </div>`;
+  }
+
+  const queuePos = s && s.repair_queue_position != null
+    ? `#${s.repair_queue_position}`
+    : "NOT IN QUEUE";
+  const repairEta = s && s.repair_queue_position != null
+    ? "MOCK: ~4 min 20 sec"
+    : "—";
+
+  const effects = MOCK_DAMAGE_EFFECTS[id] || [];
+  const effectsHtml = effects.length
+    ? `<div class="eng-det-section-head">DAMAGE EFFECTS</div>
+       ${effects.map((e) => `<div class="eng-det-effect">${e}</div>`).join("")}`
+    : "";
+
+  detailPanel.innerHTML = `
+    <div class="eng-detail-card">
+      <div class="eng-det-head">
+        <span class="eng-det-title" style="color:${color}">${sys.label}</span>
+        <button class="eng-det-close" aria-label="Close">✕</button>
+      </div>
+      <div class="eng-det-row">
+        <span class="eng-det-lbl">HEALTH</span>
+        <span class="eng-det-val" style="color:${color}">${healthLabel(id)}</span>
+      </div>
+      <div class="eng-det-barwrap">
+        <div class="eng-det-barfill" style="width:${pct}%;background:${color}"></div>
+      </div>
+      ${powerHtml}
+      ${effectsHtml}
+      <div class="eng-det-meta">
+        <div>REPAIR QUEUE: <span style="color:${color}">${queuePos}</span></div>
+        <div>ETA: <span style="color:var(--dim)">${repairEta}</span></div>
+      </div>
+    </div>`;
+
+  detailPanel.querySelector(".eng-det-close")
+    .addEventListener("click", closeDetail);
+}

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Cold Orbit — Touchscreen</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">COLD ORBIT — AUX DISPLAY</div>
+  <div id="view-title" class="topbar-view-title"></div>
+  <div id="conn-status" class="conn-status down" title="LINK DOWN" aria-label="Connection status"></div>
+</header>
+
+<main id="views">
+
+  <!-- Engineering / Master Systems Display -->
+  <section id="view-engineering" class="view-engineering" data-view="engineering">
+
+    <div class="eng-schematic-col">
+      <div class="eng-schematic-wrap">
+        <!--
+          Ship profile SVG — left = fore (bow), right = aft (stern).
+          Each subsystem is a <g data-system="..."> group with:
+            .sys-fill  shapes — stroke+fill tinted by health state
+            .sys-health-text — inline health % label
+            .sys-bar-track / .sys-bar-fill — mini 38-unit bar
+          The hull group uses .hull-line elements whose stroke changes instead.
+          Tap/click on any group opens the detail overlay (wired in engineering.js).
+        -->
+        <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg"
+             preserveAspectRatio="xMidYMid meet"
+             style="font-family:ui-monospace,'SF Mono',monospace;">
+
+          <defs>
+            <!-- Reusable mini bar track -->
+            <rect id="bar-track" width="38" height="5" rx="2" fill="#142024"/>
+          </defs>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               HULL — stroke colour changes with hull health.
+               The hull-line class marks every outline segment.
+               The <g> is the tap target; hull has no sys-fill fill shapes
+               because the whole outline IS the visual indicator.
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="hull" id="sg-hull">
+            <!-- Main hull polygon -->
+            <polygon class="hull-line"
+              points="52,130 128,90 275,76 435,74 555,86 600,106 610,120 600,134 555,154 435,166 275,164 128,150 52,130"
+              fill="none" stroke="var(--dim)" stroke-width="1.8" stroke-linejoin="round"/>
+            <!-- Upper engine pod -->
+            <rect class="hull-line" x="600" y="100" width="52" height="20"
+              fill="none" stroke="var(--dim)" stroke-width="1.5" rx="2"/>
+            <!-- Lower engine pod -->
+            <rect class="hull-line" x="600" y="130" width="52" height="20"
+              fill="none" stroke="var(--dim)" stroke-width="1.5" rx="2"/>
+            <!-- Fore missile tube guide lines (decorative) -->
+            <line class="hull-line" x1="88" y1="110" x2="128" y2="105" stroke="var(--dim)" stroke-width="1"/>
+            <line class="hull-line" x1="88" y1="150" x2="128" y2="145" stroke="var(--dim)" stroke-width="1"/>
+            <!-- Aft missile tube guide lines (decorative) -->
+            <line class="hull-line" x1="555" y1="100" x2="600" y2="106" stroke="var(--dim)" stroke-width="1"/>
+            <line class="hull-line" x1="555" y1="140" x2="600" y2="134" stroke="var(--dim)" stroke-width="1"/>
+            <!-- HULL label — centred above mid hull -->
+            <text x="362" y="195" text-anchor="middle"
+              font-size="9" letter-spacing="2" fill="var(--dim)">HULL</text>
+            <!-- Mini health strip (positioned below label) -->
+            <rect class="sys-bar-track" x="342" y="199" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="342" y="199" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="384" y="204" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               WEAPONS — twin fore hardpoints at the bow
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="weapons" id="sg-weapons">
+            <!-- Clickable + coloured zone: fore section of hull -->
+            <polygon class="sys-fill"
+              points="52,130 128,90 175,82 175,178 128,150"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1.2"/>
+            <!-- Upper hardpoint protrusion -->
+            <rect class="sys-fill" x="52" y="108" width="36" height="14" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <!-- Lower hardpoint protrusion -->
+            <rect class="sys-fill" x="52" y="118" width="36" height="14" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <!-- Label — below the lower hardpoint protrusion -->
+            <text x="55" y="158" text-anchor="start" font-size="9" letter-spacing="1.5" fill="var(--dim)">WEAPONS</text>
+            <rect class="sys-bar-track" x="55" y="162" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="55" y="162" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="95" y="167" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               REACTOR — central engineering section
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="reactor" id="sg-reactor">
+            <rect class="sys-fill" x="316" y="86" width="110" height="88" rx="4"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1.2"/>
+            <text x="371" y="127" text-anchor="middle"
+              font-size="9" letter-spacing="2" fill="var(--dim)">REACTOR</text>
+            <rect class="sys-bar-track" x="352" y="131" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="352" y="131" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="392" y="136" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               FTL DRIVE — mid-aft drive housing
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="ftl" id="sg-ftl">
+            <rect class="sys-fill" x="446" y="92" width="100" height="76" rx="4"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1.2"/>
+            <text x="496" y="127" text-anchor="middle"
+              font-size="9" letter-spacing="1.5" fill="var(--dim)">FTL DRIVE</text>
+            <rect class="sys-bar-track" x="477" y="131" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="477" y="131" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="517" y="136" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               ENGINES — aft engine section + pods
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="engines" id="sg-engines">
+            <!-- Engine pods fill -->
+            <rect class="sys-fill" x="600" y="100" width="52" height="20" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <rect class="sys-fill" x="600" y="130" width="52" height="20" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <!-- Aft stern section fill -->
+            <polygon class="sys-fill"
+              points="555,86 600,106 610,120 600,134 555,154"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1.2"/>
+            <!-- Label above the stern, within viewBox -->
+            <text x="602" y="88" text-anchor="start" font-size="9" letter-spacing="1.5" fill="var(--dim)">ENGINES</text>
+            <rect class="sys-bar-track" x="602" y="92" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="602" y="92" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="642" y="97" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               DORSAL TURRET — top-centre of hull
+               (the turrets group covers both; for this schematic dorsal
+               and ventral are combined under a single "turrets" concept —
+               they are NOT separate subsystems per the contract. Omitted.)
+
+               UTIL 1 — mid-fore, port (top stub)
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="utility_1" id="sg-utility_1">
+            <!-- Top stub at ~x=215 protruding upward from hull -->
+            <rect class="sys-fill" x="202" y="50" width="28" height="26" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <!-- Connecting line to hull -->
+            <line x1="216" y1="76" x2="216" y2="84" stroke="var(--dim)" stroke-width="0.8"/>
+            <text x="216" y="47" text-anchor="middle"
+              font-size="9" letter-spacing="1" fill="var(--dim)">UTIL 1</text>
+            <rect class="sys-bar-track" x="197" y="34" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="197" y="34" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="237" y="39" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               UTIL 2 — mid-fore, starboard (bottom stub)
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="utility_2" id="sg-utility_2">
+            <rect class="sys-fill" x="202" y="184" width="28" height="26" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <line x1="216" y1="184" x2="216" y2="176" stroke="var(--dim)" stroke-width="0.8"/>
+            <text x="216" y="222" text-anchor="middle"
+              font-size="9" letter-spacing="1" fill="var(--dim)">UTIL 2</text>
+            <rect class="sys-bar-track" x="197" y="224" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="197" y="224" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="237" y="229" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               UTIL 3 — mid-aft, port (top stub)
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="utility_3" id="sg-utility_3">
+            <rect class="sys-fill" x="438" y="48" width="28" height="26" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <line x1="452" y1="74" x2="452" y2="82" stroke="var(--dim)" stroke-width="0.8"/>
+            <text x="452" y="45" text-anchor="middle"
+              font-size="9" letter-spacing="1" fill="var(--dim)">UTIL 3</text>
+            <rect class="sys-bar-track" x="433" y="32" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="433" y="32" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="473" y="37" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+          <!-- ═══════════════════════════════════════════════════════════════
+               UTIL 4 — mid-aft, starboard (bottom stub)
+               ═══════════════════════════════════════════════════════════════ -->
+          <g data-system="utility_4" id="sg-utility_4">
+            <rect class="sys-fill" x="438" y="186" width="28" height="26" rx="2"
+              fill="var(--dim)" fill-opacity="0.04" stroke="var(--dim)" stroke-width="1"/>
+            <line x1="452" y1="186" x2="452" y2="178" stroke="var(--dim)" stroke-width="0.8"/>
+            <text x="452" y="224" text-anchor="middle"
+              font-size="9" letter-spacing="1" fill="var(--dim)">UTIL 4</text>
+            <rect class="sys-bar-track" x="433" y="226" width="38" height="5" rx="2" fill="#142024"/>
+            <rect class="sys-bar-fill"  x="433" y="226" width="0"  height="5" rx="2" fill="var(--dim)"/>
+            <text class="sys-health-text" x="473" y="231" font-size="8" fill="var(--dim)"> —</text>
+          </g>
+
+        </svg>
+      </div><!-- /.eng-schematic-wrap -->
+
+      <!-- Detail panel — overlay within the schematic column, hidden by default -->
+      <div class="eng-detail" id="eng-detail" hidden></div>
+
+    </div><!-- /.eng-schematic-col -->
+
+    <!-- Repair queue sidebar -->
+    <aside class="eng-queue-col">
+      <div class="eng-col-head">REPAIR<br>QUEUE</div>
+      <div class="eng-queue-list" id="eng-queue-list">
+        <div class="eng-queue-nominal">ALL SYSTEMS<br>NOMINAL</div>
+      </div>
+    </aside>
+
+  </section>
+  <section class="view-stub" data-view="propulsion"><h1>PROPULSION</h1><p>Status view not yet implemented.</p></section>
+  <section class="view-stub" data-view="ftl"><h1>FTL</h1><p>Status view not yet implemented.</p></section>
+  <section class="view-stub" data-view="turrets"><h1>TURRETS</h1><p>Status view not yet implemented.</p></section>
+  <section class="view-stub" data-view="missiles"><h1>MISSILES</h1><p>Status view not yet implemented.</p></section>
+  <!-- Comms view — read-only log + contacts display.
+       Physical Comms panel (LCD + Up/Down/Select) handles all actions.
+       Left: scrollable message log. Right: pageable contacts, tap for popup. -->
+  <section id="view-comms" class="view-comms" data-view="comms">
+
+    <!-- Left column: message log -->
+    <div class="comms-log-col">
+      <div class="comms-col-head">COMMS LOG <span class="comms-col-head-sub">RECENT FIRST</span></div>
+      <div class="comms-log-list" id="comms-log-list"></div>
+      <button class="comms-nudge-btn" id="comms-nudge-btn" hidden>↓ NEW MESSAGE</button>
+    </div>
+
+    <!-- Right column: contacts in sensor range -->
+    <div class="comms-targets-col">
+      <div class="comms-col-head">TARGETS IN RANGE</div>
+      <button class="comms-scroll-btn" id="comms-targets-prev" disabled>▲ PREV</button>
+      <div class="comms-targets-list" id="comms-targets-list"></div>
+      <button class="comms-scroll-btn" id="comms-targets-next">▼ NEXT</button>
+
+      <!-- Target detail popup — centered on this column.
+           Tap outside or ✕ to close. Tapping the same contact again also closes. -->
+      <div class="comms-popup-backdrop" id="comms-popup-backdrop" hidden>
+        <div class="comms-popup">
+          <div class="comms-popup-head">
+            <span class="comms-popup-name" id="comms-popup-name"></span>
+            <button class="comms-popup-close" id="comms-popup-close">✕</button>
+          </div>
+          <div class="comms-popup-row">
+            <span class="comms-popup-lbl">ALLIANCE</span>
+            <span class="comms-popup-val" id="comms-popup-alliance"></span>
+          </div>
+          <div class="comms-popup-row">
+            <span class="comms-popup-lbl">CLASS</span>
+            <span class="comms-popup-val" id="comms-popup-class"></span>
+          </div>
+          <div class="comms-popup-row">
+            <span class="comms-popup-lbl">RANGE</span>
+            <span class="comms-popup-val" id="comms-popup-range"></span>
+          </div>
+          <!-- more fields here — add rows above this line as sim-core expands the contract -->
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Loadout selection — activated by coldorbit/output/ship/loadout-unlocked=true,
+       not by normal mode routing. Overrides whatever status view is active. -->
+  <section id="view-loadout" class="view-loadout" data-view="loadout-select">
+    <div class="lo-header">LOADOUT SELECTION — DOCKED</div>
+    <div class="lo-grid">
+
+      <article class="lo-slot" data-slot="1" data-category="utility_tool">
+        <header class="lo-slot-header">
+          <span class="lo-slot-num">SLOT 1</span>
+          <span class="lo-category">Utility Tool</span>
+        </header>
+        <div class="lo-name">Mining Laser</div>
+        <div class="lo-controls">
+          <button class="lo-prev" aria-label="Previous module">&#9664;</button>
+          <button class="lo-next" aria-label="Next module">&#9654;</button>
+        </div>
+      </article>
+
+      <article class="lo-slot" data-slot="2" data-category="cargo_storage">
+        <header class="lo-slot-header">
+          <span class="lo-slot-num">SLOT 2</span>
+          <span class="lo-category">Cargo Storage</span>
+        </header>
+        <div class="lo-name">Cargo Pod</div>
+        <div class="lo-controls">
+          <button class="lo-prev" aria-label="Previous module">&#9664;</button>
+          <button class="lo-next" aria-label="Next module">&#9654;</button>
+        </div>
+      </article>
+
+      <article class="lo-slot" data-slot="3" data-category="sensor_ew">
+        <header class="lo-slot-header">
+          <span class="lo-slot-num">SLOT 3</span>
+          <span class="lo-category">Sensor / EW</span>
+        </header>
+        <div class="lo-name">Tracking Suite</div>
+        <div class="lo-controls">
+          <button class="lo-prev" aria-label="Previous module">&#9664;</button>
+          <button class="lo-next" aria-label="Next module">&#9654;</button>
+        </div>
+      </article>
+
+      <article class="lo-slot" data-slot="4" data-category="defense">
+        <header class="lo-slot-header">
+          <span class="lo-slot-num">SLOT 4</span>
+          <span class="lo-category">Defense</span>
+        </header>
+        <div class="lo-name">Shields</div>
+        <div class="lo-controls">
+          <button class="lo-prev" aria-label="Previous module">&#9664;</button>
+          <button class="lo-next" aria-label="Next module">&#9654;</button>
+        </div>
+      </article>
+
+    </div>
+    <div class="lo-footer">
+      <button class="lo-confirm-btn">CONFIRM LOADOUT</button>
+    </div>
+  </section>
+
+  <!-- Waiting state — shown on connect before any mode message arrives. -->
+  <section class="view-waiting" data-view="waiting"></section>
+
+  <section id="view-hardpoints" class="view-hardpoints" data-view="hardpoints">
+    <div class="hp-grid">
+
+      <article class="hp-slot" data-slot="1" data-category="empty">
+        <header class="hp-slot-header">
+          <span class="hp-slot-num">HARDPOINT 1</span>
+          <span class="hp-category">Empty</span>
+        </header>
+        <div class="hp-name">— empty —</div>
+        <div class="hp-armed">SAFE</div>
+        <div class="hp-readout">
+          <div class="hp-readout-row">
+            <span class="hp-readout-label">—</span>
+            <span class="hp-readout-value">—</span>
+          </div>
+          <div class="hp-readout-bar"><div class="hp-readout-bar-fill"></div></div>
+        </div>
+      </article>
+
+      <article class="hp-slot" data-slot="2" data-category="empty">
+        <header class="hp-slot-header">
+          <span class="hp-slot-num">HARDPOINT 2</span>
+          <span class="hp-category">Empty</span>
+        </header>
+        <div class="hp-name">— empty —</div>
+        <div class="hp-armed">SAFE</div>
+        <div class="hp-readout">
+          <div class="hp-readout-row">
+            <span class="hp-readout-label">—</span>
+            <span class="hp-readout-value">—</span>
+          </div>
+          <div class="hp-readout-bar"><div class="hp-readout-bar-fill"></div></div>
+        </div>
+      </article>
+
+      <article class="hp-slot" data-slot="3" data-category="empty">
+        <header class="hp-slot-header">
+          <span class="hp-slot-num">HARDPOINT 3</span>
+          <span class="hp-category">Empty</span>
+        </header>
+        <div class="hp-name">— empty —</div>
+        <div class="hp-armed">SAFE</div>
+        <div class="hp-readout">
+          <div class="hp-readout-row">
+            <span class="hp-readout-label">—</span>
+            <span class="hp-readout-value">—</span>
+          </div>
+          <div class="hp-readout-bar"><div class="hp-readout-bar-fill"></div></div>
+        </div>
+      </article>
+
+      <article class="hp-slot" data-slot="4" data-category="empty">
+        <header class="hp-slot-header">
+          <span class="hp-slot-num">HARDPOINT 4</span>
+          <span class="hp-category">Empty</span>
+        </header>
+        <div class="hp-name">— empty —</div>
+        <div class="hp-armed">SAFE</div>
+        <div class="hp-readout">
+          <div class="hp-readout-row">
+            <span class="hp-readout-label">—</span>
+            <span class="hp-readout-value">—</span>
+          </div>
+          <div class="hp-readout-bar"><div class="hp-readout-bar-fill"></div></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="vendor/mqtt.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
