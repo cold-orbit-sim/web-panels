@@ -57,6 +57,12 @@ export const TOPICS = {
   // Canonical repair queue — full array on every change, retained.
   // See docs/repair-queue-mqtt-contract.md for the full payload shape.
   repairQueue: "coldorbit/output/repair/queue",
+  // FTL destination target — retained; drives the map view's details panel
+  // and reticule. type: "none" | "star" | "planet".
+  ftlTarget: "coldorbit/output/ftl/target",
+  // Active system for the map view — retained; non-null system_id switches
+  // the map area from the Drift starmap to the system (planet) view.
+  ftlSystem: "coldorbit/output/ftl/system",
 };
 
 // Regex for routing incoming hardpoint messages — kept here so there is
@@ -84,4 +90,5 @@ export const MODES = [
   "missiles",
   "comms",
   "hardpoints",
+  "map",
 ];

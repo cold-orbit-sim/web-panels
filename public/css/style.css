@@ -2390,3 +2390,165 @@ html, body {
   0%, 100% { opacity: 1;   }
   50%       { opacity: 0.3; }
 }
+
+/* ══ MAP VIEW ═══════════════════════════════════════════════════════════════
+   Read-only navigation display. Left: target details from
+   coldorbit/output/ftl/target. Right: Drift starmap, or the system view when
+   coldorbit/output/ftl/system carries a non-null system_id. */
+
+.view-map {
+  display: none;
+  flex-direction: row;
+  height: 100%;
+}
+.view-map.active {
+  display: flex;
+}
+
+.map-details {
+  flex: 0 0 26%;
+  min-width: 0;
+  padding: clamp(10px, 2vh, 22px) clamp(10px, 1.6vw, 20px);
+  background: var(--panel);
+  border-right: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.6vh, 18px);
+  overflow: hidden;
+}
+
+.map-target-name {
+  font-size: clamp(15px, 2.6vh, 26px);
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  font-weight: 600;
+  padding-bottom: clamp(6px, 1.2vh, 12px);
+  border-bottom: 1px solid var(--panel-border);
+  overflow-wrap: anywhere;
+}
+
+.map-field-lbl {
+  font-size: clamp(9px, 1.2vh, 12px);
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+
+.map-field-val {
+  font-size: clamp(13px, 2vh, 20px);
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-top: 0.15em;
+}
+
+.map-no-target {
+  margin: auto;
+  font-size: clamp(11px, 1.6vh, 16px);
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  text-align: center;
+}
+
+.map-area {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(6px, 1.4vh, 16px);
+}
+
+.map-starmap-wrap,
+.map-system-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-starmap-wrap[hidden],
+.map-system-wrap[hidden] { display: none; }
+
+.map-starmap-svg,
+.map-system-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.map-sys-label {
+  fill: var(--dim);
+  font-family: var(--font);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+}
+
+/* Reticule — amber, matches the FTL panel's selection treatment. */
+.map-reticule line {
+  stroke: var(--amber);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* ── Star icons ─────────────────────────────────────────────────────────────
+   Panel palette translation of the original saturated starmap colours:
+   hot → white + blue halo, warm → warm white, mid → amber, cool → dim red. */
+
+.ms-field       { fill: #8ea4a8; }
+
+.ms-hot         { fill: #eaf6ff; }
+.ms-warm        { fill: #ffe9c4; }
+.ms-amber       { fill: var(--amber); }
+.ms-amber-deep  { fill: #d18a00; }
+.ms-red         { fill: #c14d3a; }
+.ms-red-deep    { fill: #8f3527; }
+.ms-red-giant   { fill: #a83c2b; }
+.ms-brown       { fill: #6b4a33; }
+.ms-void        { fill: #000; }
+
+.ms-glow-blue      { fill: var(--blue);  opacity: 0.18; }
+.ms-halo-blue      { fill: var(--blue);  opacity: 0.07; }
+.ms-glow-white     { fill: #cfe8f5;      opacity: 0.16; }
+.ms-glow-warm      { fill: #ffe9c4;      opacity: 0.16; }
+.ms-glow-amber     { fill: var(--amber); opacity: 0.16; }
+.ms-glow-red       { fill: #c14d3a;      opacity: 0.18; }
+.ms-glow-red-faint { fill: #c14d3a;      opacity: 0.08; }
+
+.ms-orbit     { fill: none; stroke: var(--dim); stroke-width: 1; opacity: 0.5; }
+.ms-ring-dim  { fill: none; stroke: var(--dim); stroke-width: 1; opacity: 0.6; }
+.ms-ring-amber{ fill: none; stroke: var(--amber); stroke-width: 1; opacity: 0.5; }
+.ms-ring-green{ fill: none; stroke: var(--green); stroke-width: 1; opacity: 0.45; }
+.ms-disc      { fill: none; stroke: var(--dim); stroke-width: 1; opacity: 0.4; }
+.ms-nebula    { fill: #4dc3ff; opacity: 0.05; }
+.ms-accretion { fill: none; stroke: var(--amber); stroke-width: 1.5; opacity: 0.6; }
+.ms-beam      { stroke: var(--blue); stroke-width: 1.5; opacity: 0.5; }
+.ms-flare     { stroke: #c14d3a; stroke-width: 1.5; opacity: 0.6; stroke-linecap: round; }
+
+/* ── System view ───────────────────────────────────────────────────────────── */
+
+.map-planet {
+  fill: #4a6b70;
+  stroke: var(--dim);
+  stroke-width: 1;
+}
+
+.map-sysview-label {
+  fill: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+}
+
+.map-sysview-label--star {
+  fill: var(--amber);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+}
+
+.map-no-planets {
+  fill: var(--dim);
+  font-family: var(--font);
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-anchor: middle;
+}

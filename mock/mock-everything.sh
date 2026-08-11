@@ -12,6 +12,7 @@ PUBLISHERS=(
     publish-alerts.sh
     publish-propulsion.sh
     publish-ftl.sh
+    publish-ftl-map.sh
     publish-turrets.sh
     publish-missiles.sh
 )

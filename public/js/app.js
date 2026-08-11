@@ -11,6 +11,7 @@ import { initPropulsion, handlePropulsionState } from "./views/propulsion.js";
 import { initFtl, handleFtlState } from "./views/ftl.js";
 import { initTurrets, handleTurretState, setTurretsLoadoutMode } from "./views/turrets.js";
 import { initMissiles, handleMissileState, setMissilesLoadoutMode } from "./views/missiles.js";
+import { initMap, handleFtlTarget, handleFtlSystem } from "./views/map.js";
 
 const params = new URLSearchParams(location.search);
 const brokerUrl = params.get("broker") || BROKER_URL;
@@ -28,6 +29,7 @@ const VIEW_TITLES = {
   missiles:    "MISSILES",
   comms:       "COMMS — CONTACTS & LOG",
   hardpoints:  "HARDPOINTS",
+  map:         "NAVIGATION — DRIFT MAP",
 };
 
 // When true the loadout screen overrides all normal mode routing.
@@ -74,6 +76,7 @@ initMissiles(document.getElementById("view-missiles"), (tubeId, payload) => {
   );
 });
 initComms(document.getElementById("view-comms"));
+initMap(document.getElementById("view-map"));
 initHardpoints(document.getElementById("view-hardpoints"));
 initLoadout(document.getElementById("view-loadout"), (payload) => {
   client.publish(
@@ -107,6 +110,8 @@ client.on("connect", () => {
       TOPICS.alerts,
       TOPICS.propulsionState,
       TOPICS.ftlState,
+      TOPICS.ftlTarget,
+      TOPICS.ftlSystem,
       TOPICS.turretState,
       TOPICS.missileState,
     ],
@@ -161,6 +166,20 @@ client.on("message", (topic, payloadBuf) => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
     handleFtlState(data);
+    return;
+  }
+
+  if (topic === TOPICS.ftlTarget) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleFtlTarget(data);
+    return;
+  }
+
+  if (topic === TOPICS.ftlSystem) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleFtlSystem(data);
     return;
   }
 

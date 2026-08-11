@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drift Starmap — Map View Preview</title>
+<link rel="stylesheet" href="../public/css/style.css">
+<style>
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  height: auto;
+  overflow: auto;
+}
+h1 {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: var(--amber);
+  font-weight: 600;
+  margin: 0;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.controls button {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.controls button:hover { border-color: var(--amber); color: var(--amber); }
+.stage {
+  width: min(1100px, 96vw);
+  height: min(660px, 76vh);
+  border: 1px solid var(--panel-border);
+}
+.view-map { height: 100%; }
+</style>
+</head>
+<body>
+
+<h1>DRIFT STARMAP — MAP VIEW PREVIEW</h1>
+
+<div class="controls">
+  <button data-scenario="none">NO TARGET</button>
+  <button data-scenario="star">STAR TARGET (K — Kerath)</button>
+  <button data-scenario="star-x">STAR TARGET (X — Xelgrave)</button>
+  <button data-scenario="system">SYSTEM VIEW (Kerath, planet target)</button>
+  <button data-scenario="system-empty">SYSTEM VIEW (no planets)</button>
+</div>
+
+<div class="stage">
+  <section id="view-map" class="view-map active" data-view="map"></section>
+</div>
+
+<script type="module">
+import { initMap, handleFtlTarget, handleFtlSystem } from "../public/js/views/map.js";
+
+const el = document.getElementById("view-map");
+initMap(el);
+
+const SCENARIOS = {
+  none: {
+    target: { type: "none" },
+    system: { system_id: null },
+  },
+  star: {
+    target: {
+      type: "star",
+      system_id: "K",
+      name: "Kerath",
+      star_type: "K-type main sequence",
+      planet_count: 4,
+      distance_au: 1.4,
+      spool_time_s: 95,
+    },
+    system: { system_id: null },
+  },
+  "star-x": {
+    target: {
+      type: "star",
+      system_id: "X",
+      name: "Xelgrave",
+      star_type: "Black hole",
+      planet_count: 0,
+      distance_au: 12.8,
+      spool_time_s: 420,
+    },
+    system: { system_id: null },
+  },
+  system: {
+    target: {
+      type: "planet",
+      system_id: "K",
+      system_name: "Kerath",
+      name: "Kerath III",
+      star_type: "Rocky / thin atmosphere",
+      distance_au: 1.6,
+      spool_time_s: 110,
+    },
+    system: {
+      system_id: "K",
+      star_name: "Kerath",
+      planets: [
+        { name: "Kerath I" },
+        { name: "Kerath II" },
+        { name: "Kerath III" },
+        { name: "Kerath IV" },
+      ],
+    },
+  },
+  "system-empty": {
+    target: {
+      type: "star",
+      system_id: "X",
+      name: "Xelgrave",
+      star_type: "Black hole",
+      planet_count: 0,
+      distance_au: 12.8,
+      spool_time_s: 420,
+    },
+    system: { system_id: "X", star_name: "Xelgrave", planets: [] },
+  },
+};
+
+function apply(name) {
+  const s = SCENARIOS[name];
+  if (!s) return;
+  handleFtlTarget(s.target);
+  handleFtlSystem(s.system);
+}
+
+document.querySelectorAll(".controls button").forEach((btn) => {
+  btn.addEventListener("click", () => apply(btn.dataset.scenario));
+});
+
+apply("star");
+</script>
+
+</body>
+</html>
