@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!--
+  missiles-schematic-preview.html — standalone preview of the missiles view
+  top-down ship schematic with all four tube markers cycling through lock states.
+  Open directly in a browser (no server needed).
+  Cycles: none → acquiring → locked → none, staggered per tube.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Missiles Schematic Preview</title>
+<style>
+  :root {
+    --bg: #06090b;
+    --panel: #0d1418;
+    --panel-border: #1f2e33;
+    --text: #d8e6e8;
+    --dim: #5c7378;
+    --amber: #ffb000;
+    --green: #3ddc71;
+    --red: #ff4d4d;
+    --font: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  h1 {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    margin: 0;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+  #schematic-wrap {
+    width: min(300px, 60vw);
+    height: min(500px, 80vh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .legend {
+    display: flex;
+    gap: 18px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 1px solid currentColor;
+  }
+  .leg-none     { color: var(--dim);   }
+  .leg-acq      { color: var(--amber); }
+  .leg-locked   { color: var(--green); }
+  .leg-armed    { color: #5fffaa; }
+  #state-readout {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  @keyframes ms-acquiring-pulse {
+    0%, 100% { opacity: 1;   }
+    50%       { opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+
+<h1>MISSILES — SCHEMATIC PREVIEW</h1>
+<div class="subtitle">All four tubes cycling through lock states. Auto-advances every 2 s.</div>
+
+<div id="schematic-wrap">
+<svg id="ms-schematic-svg" viewBox="0 0 260 440" xmlns="http://www.w3.org/2000/svg"
+     preserveAspectRatio="xMidYMid meet"
+     style="width:100%;height:100%;overflow:visible;
+            font-family:ui-monospace,'SF Mono',monospace;">
+
+  <!-- Hull silhouette: elongated, wider amidships, bow at top -->
+  <polygon
+    points="130,22 162,52 182,96 190,150 192,220 190,290 178,334 162,372 148,394 112,394 98,372 82,334 70,290 68,220 70,150 78,96 98,52"
+    fill="#0a1318" stroke="var(--dim)" stroke-width="1.6" stroke-linejoin="round"/>
+
+  <!-- Faint centreline -->
+  <line x1="130" y1="22" x2="130" y2="394"
+    stroke="var(--dim)" stroke-width="0.5" stroke-dasharray="6 4" opacity="0.22"/>
+
+  <!-- Bridge block -->
+  <rect x="116" y="148" width="28" height="36" rx="2"
+    fill="#0d1e24" stroke="var(--dim)" stroke-width="1" opacity="0.55"/>
+
+  <!-- Engine nozzles -->
+  <ellipse cx="112" cy="392" rx="11" ry="8"
+    fill="#0a1318" stroke="var(--dim)" stroke-width="1.2" opacity="0.6"/>
+  <ellipse cx="148" cy="392" rx="11" ry="8"
+    fill="#0a1318" stroke="var(--dim)" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- ── TUBE: Fore Port (FP) — housing 22×28, center (84,79) ── -->
+  <g id="ms-marker-fore_port">
+    <circle cx="84" cy="79" r="22" fill="none" stroke="transparent" stroke-width="2.2" id="ms-ring-fore_port"/>
+    <line x1="84" y1="65" x2="84" y2="46" stroke="var(--dim)" stroke-width="2" id="ms-dir-fore_port"/>
+    <polygon points="84,44 80,54 88,54" fill="var(--dim)" id="ms-arrow-fore_port"/>
+    <rect x="73" y="65" width="22" height="28" rx="3" fill="#0a1318" stroke="var(--dim)" stroke-width="2" id="ms-rect-fore_port"/>
+    <rect x="80" y="72" width="9" height="14" rx="1" fill="var(--dim)" id="ms-inner-fore_port"/>
+    <text x="71" y="99" text-anchor="end" font-size="9" letter-spacing="1.5" fill="var(--dim)" id="ms-lbl-fore_port">FP</text>
+  </g>
+
+  <!-- ── TUBE: Fore Starboard (FS) — housing 22×28, center (176,79) ── -->
+  <g id="ms-marker-fore_starboard">
+    <circle cx="176" cy="79" r="22" fill="none" stroke="transparent" stroke-width="2.2" id="ms-ring-fore_starboard"/>
+    <line x1="176" y1="65" x2="176" y2="46" stroke="var(--dim)" stroke-width="2" id="ms-dir-fore_starboard"/>
+    <polygon points="176,44 172,54 180,54" fill="var(--dim)" id="ms-arrow-fore_starboard"/>
+    <rect x="165" y="65" width="22" height="28" rx="3" fill="#0a1318" stroke="var(--dim)" stroke-width="2" id="ms-rect-fore_starboard"/>
+    <rect x="171" y="72" width="9" height="14" rx="1" fill="var(--dim)" id="ms-inner-fore_starboard"/>
+    <text x="189" y="99" text-anchor="start" font-size="9" letter-spacing="1.5" fill="var(--dim)" id="ms-lbl-fore_starboard">FS</text>
+  </g>
+
+  <!-- ── TUBE: Aft Port (AP) — housing 22×28, center (84,341) ── -->
+  <g id="ms-marker-aft_port">
+    <circle cx="84" cy="341" r="22" fill="none" stroke="transparent" stroke-width="2.2" id="ms-ring-aft_port"/>
+    <line x1="84" y1="355" x2="84" y2="374" stroke="var(--dim)" stroke-width="2" id="ms-dir-aft_port"/>
+    <polygon points="84,378 80,368 88,368" fill="var(--dim)" id="ms-arrow-aft_port"/>
+    <rect x="73" y="327" width="22" height="28" rx="3" fill="#0a1318" stroke="var(--dim)" stroke-width="2" id="ms-rect-aft_port"/>
+    <rect x="80" y="334" width="9" height="14" rx="1" fill="var(--dim)" id="ms-inner-aft_port"/>
+    <text x="71" y="325" text-anchor="end" font-size="9" letter-spacing="1.5" fill="var(--dim)" id="ms-lbl-aft_port">AP</text>
+  </g>
+
+  <!-- ── TUBE: Aft Starboard (AS) — housing 22×28, center (176,341) ── -->
+  <g id="ms-marker-aft_starboard">
+    <circle cx="176" cy="341" r="22" fill="none" stroke="transparent" stroke-width="2.2" id="ms-ring-aft_starboard"/>
+    <line x1="176" y1="355" x2="176" y2="374" stroke="var(--dim)" stroke-width="2" id="ms-dir-aft_starboard"/>
+    <polygon points="176,378 172,368 180,368" fill="var(--dim)" id="ms-arrow-aft_starboard"/>
+    <rect x="165" y="327" width="22" height="28" rx="3" fill="#0a1318" stroke="var(--dim)" stroke-width="2" id="ms-rect-aft_starboard"/>
+    <rect x="171" y="334" width="9" height="14" rx="1" fill="var(--dim)" id="ms-inner-aft_starboard"/>
+    <text x="189" y="325" text-anchor="start" font-size="9" letter-spacing="1.5" fill="var(--dim)" id="ms-lbl-aft_starboard">AS</text>
+  </g>
+
+</svg>
+</div>
+
+<div class="legend">
+  <div class="legend-item leg-none">
+    <div class="legend-dot"></div> NONE
+  </div>
+  <div class="legend-item leg-acq">
+    <div class="legend-dot"></div> ACQUIRING
+  </div>
+  <div class="legend-item leg-locked">
+    <div class="legend-dot"></div> LOCKED
+  </div>
+  <div class="legend-item leg-armed">
+    <div class="legend-dot"></div> LOCKED+ARMED
+  </div>
+</div>
+
+<div id="state-readout"></div>
+
+<script>
+const TUBES = ['fore_port', 'fore_starboard', 'aft_port', 'aft_starboard'];
+const PHASES = { fore_port: 0, fore_starboard: 3, aft_port: 6, aft_starboard: 9 };
+const ARMED = { fore_port: true, fore_starboard: false, aft_port: false, aft_starboard: true };
+const LOCK_CYCLE = ['none', 'none', 'none', 'none', 'none', 'none', 'acquiring', 'acquiring', 'acquiring', 'locked', 'locked', 'locked'];
+
+const DIM   = 'var(--dim)';
+const AMBER = 'var(--amber)';
+const GREEN = 'var(--green)';
+const GREEN_ARMED = '#5fffaa';
+
+let tick = 0;
+
+function lockColor(lock, armed) {
+  if (lock === 'locked')    return armed ? GREEN_ARMED : GREEN;
+  if (lock === 'acquiring') return AMBER;
+  return DIM;
+}
+
+function updateMarker(id, lock, armed) {
+  const svg = document.getElementById('ms-schematic-svg');
+  const color = lockColor(lock, armed);
+  const marker = svg.querySelector(`#ms-marker-${id}`);
+  if (!marker) return;
+
+  ['rect','inner','dir','arrow','lbl'].forEach(part => {
+    const el = svg.querySelector(`#ms-${part}-${id}`);
+    if (!el) return;
+    if (part === 'rect' || part === 'dir') el.setAttribute('stroke', color);
+    else el.setAttribute('fill', color);
+  });
+
+  const ring = svg.querySelector(`#ms-ring-${id}`);
+  if (ring) {
+    if (lock === 'locked') {
+      ring.setAttribute('stroke', color);
+      ring.removeAttribute('stroke-dasharray');
+      ring.setAttribute('opacity', '0.5');
+    } else if (lock === 'acquiring') {
+      ring.setAttribute('stroke', color);
+      ring.setAttribute('stroke-dasharray', '18 12');
+      ring.setAttribute('opacity', '0.55');
+    } else {
+      ring.setAttribute('stroke', 'transparent');
+    }
+  }
+
+  marker.style.animation = lock === 'acquiring'
+    ? 'ms-acquiring-pulse 1.2s ease-in-out infinite'
+    : '';
+}
+
+function step() {
+  const readout = [];
+  TUBES.forEach(id => {
+    const phase = PHASES[id];
+    const lock  = LOCK_CYCLE[(tick + phase) % 12];
+    const armed = ARMED[id];
+    updateMarker(id, lock, armed);
+    const label = id.replace('_', ' ').toUpperCase();
+    const armedStr = armed ? ' ARMED' : '';
+    readout.push(`${label}: ${lock.toUpperCase()}${armedStr}`);
+  });
+  document.getElementById('state-readout').textContent = readout.join('   ');
+  tick++;
+}
+
+step();
+setInterval(step, 2000);
+</script>
+
+</body>
+</html>

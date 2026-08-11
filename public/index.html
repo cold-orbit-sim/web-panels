@@ -11,7 +11,10 @@
 <header class="topbar">
   <div class="topbar-title">COLD ORBIT — AUX DISPLAY</div>
   <div id="view-title" class="topbar-view-title"></div>
-  <div id="conn-status" class="conn-status down" title="LINK DOWN" aria-label="Connection status"></div>
+  <div class="topbar-right">
+    <div id="alert-badge" class="alert-badge" hidden></div>
+    <div id="conn-status" class="conn-status down" title="LINK DOWN" aria-label="Connection status"></div>
+  </div>
 </header>
 
 <main id="views">
@@ -218,10 +221,10 @@
     </aside>
 
   </section>
-  <section class="view-stub" data-view="propulsion"><h1>PROPULSION</h1><p>Status view not yet implemented.</p></section>
-  <section class="view-stub" data-view="ftl"><h1>FTL</h1><p>Status view not yet implemented.</p></section>
-  <section class="view-stub" data-view="turrets"><h1>TURRETS</h1><p>Status view not yet implemented.</p></section>
-  <section class="view-stub" data-view="missiles"><h1>MISSILES</h1><p>Status view not yet implemented.</p></section>
+  <section id="view-propulsion" class="view-propulsion" data-view="propulsion"></section>
+  <section id="view-ftl" class="view-ftl" data-view="ftl"></section>
+  <section id="view-turrets" class="view-turrets" data-view="turrets"></section>
+  <section id="view-missiles" class="view-missiles" data-view="missiles"></section>
   <!-- Comms view — read-only log + contacts display.
        Physical Comms panel (LCD + Up/Down/Select) handles all actions.
        Left: scrollable message log. Right: pageable contacts, tap for popup. -->

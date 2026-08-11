@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Ore Hopper — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:16px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:220px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:8px; }
+.fill-pct { font-size:36px; font-weight:700; color:var(--text); }
+.fill-bar { height:10px; background:rgba(255,176,0,.12); border:1px solid var(--amber); border-radius:2px; overflow:hidden; margin:8px 0 4px; }
+.fill-inner { height:100%; background:var(--amber); opacity:.72; }
+.ore-label { color:var(--dim); font-size:10px; letter-spacing:.14em; margin-top:4px; }
+</style></head><body>
+<h1>HARDPOINT MODULE — ORE HOPPER</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:20px;">Cargo/Storage. Fill level shown graphically inside hopper body. All soft keys blank.</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">25% FILL — MOCK: Iron Oxide</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <!-- Hopper outline: top 10–190 @ y=10; bottom 72–128 @ y=170 -->
+    <polygon points="10,10 190,10 128,170 72,170" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <!-- Fill at 25%: top y = 170 - 0.25*160 = 130 -->
+    <polygon points="83,130 117,130 128,170 72,170" fill="#ffb000" opacity="0.38"/>
+    <!-- Top rim -->
+    <rect x="8" y="4" width="184" height="8" rx="2" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <!-- Gussets -->
+    <line x1="60" y1="10" x2="83" y2="80" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <line x1="140" y1="10" x2="117" y2="80" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <!-- Discharge gate -->
+    <rect x="72" y="170" width="56" height="14" rx="1" fill="#06090b" stroke="#ffb000" stroke-width="1.4"/>
+    <!-- Mounting -->
+    <rect x="86" y="184" width="28" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <!-- Fill text -->
+    <text x="100" y="160" text-anchor="middle" fill="#d8e6e8" font-size="18" font-family="monospace" font-weight="700">25%</text>
+    <circle cx="18" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="fill-pct">25%</div>
+  <div class="fill-bar"><div class="fill-inner" style="width:25%"></div></div>
+  <div class="ore-label">MOCK: Iron Oxide</div>
+</div>
+
+<div class="card">
+  <div class="label">65% FILL — MOCK: Silicate</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <polygon points="10,10 190,10 128,170 72,170" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <!-- Fill at 65%: top y = 170 - 0.65*160 = 66 -->
+    <polygon points="32.7,66 167.3,66 128,170 72,170" fill="#ffb000" opacity="0.38"/>
+    <rect x="8" y="4" width="184" height="8" rx="2" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <line x1="60" y1="10" x2="83" y2="80" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <line x1="140" y1="10" x2="117" y2="80" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <rect x="72" y="170" width="56" height="14" rx="1" fill="#06090b" stroke="#ffb000" stroke-width="1.4"/>
+    <rect x="86" y="184" width="28" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <text x="100" y="160" text-anchor="middle" fill="#d8e6e8" font-size="18" font-family="monospace" font-weight="700">65%</text>
+    <circle cx="18" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="fill-pct">65%</div>
+  <div class="fill-bar"><div class="fill-inner" style="width:65%"></div></div>
+  <div class="ore-label">MOCK: Silicate</div>
+</div>
+
+<div class="card">
+  <div class="label">100% FILL — MOCK: Rare Earth</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <polygon points="10,10 190,10 128,170 72,170" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <!-- Full fill: top same as hopper top -->
+    <polygon points="10,10 190,10 128,170 72,170" fill="#ffb000" opacity="0.38"/>
+    <rect x="8" y="4" width="184" height="8" rx="2" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <rect x="72" y="170" width="56" height="14" rx="1" fill="#06090b" stroke="#ffb000" stroke-width="1.4"/>
+    <rect x="86" y="184" width="28" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <text x="100" y="100" text-anchor="middle" fill="#d8e6e8" font-size="18" font-family="monospace" font-weight="700">100%</text>
+    <circle cx="18" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="fill-pct">100%</div>
+  <div class="fill-bar"><div class="fill-inner" style="width:100%"></div></div>
+  <div class="ore-label">MOCK: Rare Earth</div>
+</div>
+
+</div>
+<p style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:20px;">FLAG FOR REVIEW: Hopper trapezoid proportions, fill polygon blending, discharge gate shape.</p>
+</body></html>

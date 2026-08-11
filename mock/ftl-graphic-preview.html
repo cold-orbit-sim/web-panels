@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FTL Graphic — Phase Preview</title>
+<style>
+
+/* ── Palette (matches main app) ── */
+:root {
+  --bg:           #06090b;
+  --panel:        #0d1418;
+  --panel-border: #1f2e33;
+  --text:         #d8e6e8;
+  --dim:          #5c7378;
+  --amber:        #ffb000;
+  --green:        #3ddc71;
+  --red:          #ff4d4d;
+  --blue:         #4dc3ff;
+  --font: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 28px;
+  padding: 24px;
+}
+
+h1 {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.preview-wrap {
+  width: min(400px, 90vw);
+  height: min(400px, 90vw);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phase-label {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--dim);
+  min-width: 14ch;
+  text-align: center;
+}
+.phase-label.charging { color: var(--amber); }
+.phase-label.ready    { color: var(--green); }
+.phase-label.jumping  { color: #ffffff; }
+
+.progress-bar-wrap {
+  width: min(400px, 90vw);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-bar-track {
+  flex: 1;
+  height: 12px;
+  background: #142024;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  background: var(--dim);
+  transition: width 300ms linear, background 400ms;
+}
+.progress-bar-fill.amber { background: var(--amber); }
+.progress-bar-fill.green { background: var(--green); }
+
+.pct-label {
+  min-width: 3.5em;
+  text-align: right;
+  font-size: 14px;
+  color: var(--dim);
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+button {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+button:hover  { border-color: var(--amber); color: var(--amber); }
+button.active { border-color: var(--green); color: var(--green); }
+
+.hint {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+
+/* ── SVG ring animations ── */
+
+@keyframes ftl-spin-cw  { to { transform: rotate(360deg);  } }
+@keyframes ftl-spin-ccw { to { transform: rotate(-360deg); } }
+
+@keyframes ftl-glow-breathe {
+  0%, 100% { transform: scale(1);    }
+  50%       { transform: scale(1.2); }
+}
+
+@keyframes ftl-spoke-pulse {
+  0%, 100% { opacity: 0.12; }
+  50%       { opacity: 0.8;  }
+}
+
+@keyframes ftl-jump-burst {
+  0%   { opacity: 0;    }
+  8%   { opacity: 0.92; }
+  100% { opacity: 0;    }
+}
+
+.ftl-ring-cw {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ftl-spin-cw var(--ftl-spin-dur, 25s) linear infinite;
+}
+.ftl-ring-ccw {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ftl-spin-ccw var(--ftl-spin-dur-ccw, 18s) linear infinite;
+}
+.ftl-ring-cw-inner {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ftl-spin-cw var(--ftl-spin-dur-inner, 42s) linear infinite;
+}
+
+.ftl-ring-seg--outer { opacity: calc(0.25 + var(--ftl-progress, 0) * 0.75); }
+.ftl-ring-seg--coil  { opacity: calc(0.3  + var(--ftl-progress, 0) * 0.7);  }
+.ftl-ring-seg--inner { opacity: calc(0.2  + var(--ftl-progress, 0) * 0.8);  }
+
+.ftl-tick        { stroke: var(--dim); stroke-width: 1; }
+.ftl-tick--major { stroke: var(--amber); stroke-width: 1.2; opacity: 0.45; }
+
+.ftl-spokes line {
+  stroke: var(--amber);
+  stroke-width: 1;
+  animation: ftl-spoke-pulse var(--ftl-pulse-dur, 3s) ease-in-out infinite;
+}
+.ftl-spokes line:nth-child(1) { animation-delay:    0s; }
+.ftl-spokes line:nth-child(2) { animation-delay: -0.375s; }
+.ftl-spokes line:nth-child(3) { animation-delay: -0.75s;  }
+.ftl-spokes line:nth-child(4) { animation-delay: -1.125s; }
+.ftl-spokes line:nth-child(5) { animation-delay: -1.5s;   }
+.ftl-spokes line:nth-child(6) { animation-delay: -1.875s; }
+.ftl-spokes line:nth-child(7) { animation-delay: -2.25s;  }
+.ftl-spokes line:nth-child(8) { animation-delay: -2.625s; }
+
+.ftl-core-glow {
+  opacity: var(--ftl-glow, 0.18);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ftl-glow-breathe var(--ftl-pulse-dur, 3s) ease-in-out infinite;
+}
+
+.ftl-core-ring {
+  opacity: calc(0.35 + var(--ftl-progress, 0) * 0.65);
+  transition: stroke 300ms;
+}
+.ftl-core-center {
+  opacity: calc(0.45 + var(--ftl-progress, 0) * 0.55);
+  transition: fill 300ms;
+}
+.ftl-bg-glow {
+  opacity: calc(0.25 + var(--ftl-progress, 0) * 0.55);
+}
+
+/* Ready phase: inner accent turns green */
+.ftl-svg.ftl-ready .ftl-ring-seg--inner { stroke: var(--green); }
+.ftl-svg.ftl-ready .ftl-core-ring       { stroke: var(--green); }
+.ftl-svg.ftl-ready .ftl-core-center     { fill:   var(--green); }
+
+/* Jump flash */
+.ftl-jump-flash { pointer-events: none; }
+.ftl-svg.ftl-jumping .ftl-jump-flash {
+  animation: ftl-jump-burst 1.5s ease-out forwards;
+}
+
+</style>
+</head>
+<body>
+
+<h1>FTL DRIVE — GRAPHIC PHASE PREVIEW</h1>
+
+<div class="preview-wrap">
+  <svg id="ftl-svg" class="ftl-svg ftl-idle"
+       viewBox="0 0 300 300"
+       xmlns="http://www.w3.org/2000/svg"
+       preserveAspectRatio="xMidYMid meet"
+       style="width:100%;height:100%;overflow:visible;">
+    <defs>
+      <radialGradient id="ftl-glow-grad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#ffb000" stop-opacity="1"/>
+        <stop offset="40%"  stop-color="#ffb000" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#ffb000" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="ftl-bg-grad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#c87800" stop-opacity="0.12"/>
+        <stop offset="55%"  stop-color="#0820cc" stop-opacity="0.05"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="ftl-blur-sm" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3.5"/>
+      </filter>
+    </defs>
+
+    <!-- Ambient field background -->
+    <circle class="ftl-bg-glow" cx="150" cy="150" r="148" fill="url(#ftl-bg-grad)"/>
+
+    <!-- Outer segmented ring: 16 dashes, CW -->
+    <g class="ftl-ring-cw">
+      <circle class="ftl-ring-seg ftl-ring-seg--outer"
+              cx="150" cy="150" r="138" fill="none"
+              stroke="var(--amber)" stroke-width="3"
+              pathLength="1000" stroke-dasharray="50 12.5"/>
+    </g>
+
+    <!-- Tick ring: 24 static marks (every 15°), 8 major (every 45°) -->
+    <g class="ftl-tick-ring" id="tick-ring"></g>
+
+    <!-- Field coil ring: 6 arcs, CCW, blue -->
+    <g class="ftl-ring-ccw">
+      <circle class="ftl-ring-seg ftl-ring-seg--coil"
+              cx="150" cy="150" r="96" fill="none"
+              stroke="var(--blue)" stroke-width="5"
+              pathLength="1000" stroke-dasharray="130 37"/>
+    </g>
+
+    <!-- Inner resonance ring: 8 segments, slower CW -->
+    <g class="ftl-ring-cw-inner">
+      <circle class="ftl-ring-seg ftl-ring-seg--inner"
+              cx="150" cy="150" r="70" fill="none"
+              stroke="var(--amber)" stroke-width="2.5"
+              pathLength="1000" stroke-dasharray="100 25"/>
+    </g>
+
+    <!-- Radial spokes: 8 lines -->
+    <g class="ftl-spokes" id="spokes"></g>
+
+    <!-- Core glow -->
+    <circle class="ftl-core-glow" cx="150" cy="150" r="50"
+            fill="url(#ftl-glow-grad)" filter="url(#ftl-blur-sm)"/>
+
+    <!-- Decorative core ring -->
+    <circle class="ftl-core-ring" cx="150" cy="150" r="22"
+            fill="none" stroke="var(--amber)" stroke-width="2"/>
+
+    <!-- Centre dot -->
+    <circle class="ftl-core-center" cx="150" cy="150" r="8" fill="var(--amber)"/>
+
+    <!-- Jump flash overlay -->
+    <circle class="ftl-jump-flash" cx="150" cy="150" r="150"
+            fill="white" opacity="0" pointer-events="none"/>
+  </svg>
+</div>
+
+<div class="phase-label" id="phase-label">STANDBY</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" id="prog-fill"></div>
+  </div>
+  <span class="pct-label" id="pct-label">—</span>
+</div>
+
+<div class="controls">
+  <button onclick="jumpToPhase('idle')">IDLE</button>
+  <button onclick="jumpToPhase('charging-0')">CHARGING 0%</button>
+  <button onclick="jumpToPhase('charging-50')">CHARGING 50%</button>
+  <button onclick="jumpToPhase('charging-100')">CHARGING 100%</button>
+  <button onclick="jumpToPhase('ready')">READY</button>
+  <button onclick="jumpToPhase('jumping')">JUMPING</button>
+  <button onclick="jumpToPhase('cooldown-50')">COOLDOWN 50%</button>
+  <button onclick="jumpToPhase('cooldown-0')">COOLDOWN 0%</button>
+  <button id="auto-btn" onclick="toggleAuto()" class="active">AUTO CYCLE ▶</button>
+</div>
+
+<div class="hint">Auto-cycle: idle → charging 0%→100% → ready → jumping → cooldown 100%→0% → idle</div>
+
+<script>
+// ── Populate generated SVG elements ──────────────────────────────────────────
+
+(function buildSvgContent() {
+  // Tick marks
+  const tickGroup = document.getElementById('tick-ring');
+  for (let i = 0; i < 24; i++) {
+    const major = i % 3 === 0;
+    const line  = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', '150');
+    line.setAttribute('y1', major ? '22' : '25');
+    line.setAttribute('x2', '150');
+    line.setAttribute('y2', '32');
+    line.setAttribute('transform', `rotate(${i * 15} 150 150)`);
+    line.setAttribute('class', major ? 'ftl-tick ftl-tick--major' : 'ftl-tick');
+    tickGroup.appendChild(line);
+  }
+
+  // Spokes
+  const spokesGroup = document.getElementById('spokes');
+  for (let i = 0; i < 8; i++) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', '150');
+    line.setAttribute('y1', '82');
+    line.setAttribute('x2', '150');
+    line.setAttribute('y2', '122');
+    line.setAttribute('transform', `rotate(${i * 45} 150 150)`);
+    line.setAttribute('class', 'ftl-spoke');
+    spokesGroup.appendChild(line);
+  }
+})();
+
+// ── Phase definitions ─────────────────────────────────────────────────────────
+
+const svg       = document.getElementById('ftl-svg');
+const labelEl   = document.getElementById('phase-label');
+const progFill  = document.getElementById('prog-fill');
+const pctLabel  = document.getElementById('pct-label');
+
+const PHASE_NAMES = {
+  idle:     'STANDBY',
+  charging: 'CHARGING',
+  ready:    'JUMP READY',
+  jumping:  'JUMPING',
+  cooldown: 'COOLDOWN',
+};
+
+function applyState(phase, progress) {
+  // Phase class
+  svg.classList.remove('ftl-idle','ftl-charging','ftl-ready','ftl-jumping','ftl-cooldown');
+  svg.classList.add(`ftl-${phase}`);
+
+  // Status label
+  labelEl.textContent = PHASE_NAMES[phase] || phase;
+  labelEl.className   = `phase-label ${phase}`;
+
+  // Spin duration (25 s idle → 2 s ready)
+  const ratio = phase === 'ready' || phase === 'jumping' ? 1
+               : phase === 'charging' || phase === 'cooldown' ? progress : 0;
+  const cw    = (25    - ratio * 23).toFixed(2);
+  const ccw   = (18    - ratio * 16.6).toFixed(2);
+  const inner = (42    - ratio * 38.6).toFixed(2);
+  svg.style.setProperty('--ftl-spin-dur',       `${cw}s`);
+  svg.style.setProperty('--ftl-spin-dur-ccw',   `${ccw}s`);
+  svg.style.setProperty('--ftl-spin-dur-inner',  `${inner}s`);
+
+  // Glow opacity
+  const glow = phase === 'jumping' ? 1.0
+             : phase === 'ready'   ? 0.9
+             : 0.18 + ratio * 0.72;
+  svg.style.setProperty('--ftl-glow', glow.toFixed(3));
+
+  // Pulse duration
+  const pulseDur = phase === 'jumping' ? 0.3
+                 : phase === 'ready'   ? 0.7
+                 : (3.0 - ratio * 2.3).toFixed(2);
+  svg.style.setProperty('--ftl-pulse-dur', `${pulseDur}s`);
+
+  // Progress var (drives opacity calc)
+  svg.style.setProperty('--ftl-progress', progress.toFixed(4));
+
+  // Charge bar
+  let barPct = 0, barClass = '', pctText = '—';
+  if (phase === 'charging') {
+    barPct = progress * 100; barClass = 'amber'; pctText = `${Math.round(barPct)}%`;
+  } else if (phase === 'ready') {
+    barPct = 100; barClass = 'green'; pctText = '100%';
+  } else if (phase === 'cooldown') {
+    barPct = progress * 100; barClass = ''; pctText = `${Math.round(barPct)}%`;
+  }
+  progFill.style.width = `${barPct.toFixed(1)}%`;
+  progFill.className   = `progress-bar-fill ${barClass}`;
+  pctLabel.textContent = pctText;
+}
+
+// ── Manual phase jump ─────────────────────────────────────────────────────────
+
+function jumpToPhase(key) {
+  stopAuto();
+  const map = {
+    'idle':          () => applyState('idle',     0),
+    'charging-0':    () => applyState('charging', 0),
+    'charging-50':   () => applyState('charging', 0.5),
+    'charging-100':  () => applyState('charging', 1),
+    'ready':         () => applyState('ready',    1),
+    'jumping':       () => applyState('jumping',  0),
+    'cooldown-50':   () => applyState('cooldown', 0.5),
+    'cooldown-0':    () => applyState('cooldown', 0),
+  };
+  if (map[key]) map[key]();
+}
+
+// ── Auto-cycle ────────────────────────────────────────────────────────────────
+
+let autoTimer  = null;
+let autoRunning = false;
+
+// Sequence: list of [phase, progress, holdMs]
+function buildSequence() {
+  const seq = [];
+  seq.push(['idle', 0, 2000]);
+  // charging 0 → 1 in 10 steps × 1 s
+  for (let i = 0; i <= 10; i++) seq.push(['charging', i / 10, 700]);
+  seq.push(['ready',    1, 1200]);
+  seq.push(['jumping',  0, 1000]);
+  // cooldown 1 → 0 in 8 steps × 0.8 s
+  for (let i = 0; i <= 8; i++) seq.push(['cooldown', 1 - i / 8, 600]);
+  seq.push(['idle', 0, 1500]);
+  return seq;
+}
+
+let seqIdx = 0;
+const seq  = buildSequence();
+
+function runNextStep() {
+  if (!autoRunning) return;
+  const [phase, progress, holdMs] = seq[seqIdx];
+  applyState(phase, progress);
+  seqIdx = (seqIdx + 1) % seq.length;
+  autoTimer = setTimeout(runNextStep, holdMs);
+}
+
+function startAuto() {
+  autoRunning = true;
+  document.getElementById('auto-btn').classList.add('active');
+  runNextStep();
+}
+
+function stopAuto() {
+  autoRunning = false;
+  clearTimeout(autoTimer);
+  document.getElementById('auto-btn').classList.remove('active');
+}
+
+function toggleAuto() {
+  if (autoRunning) stopAuto(); else startAuto();
+}
+
+// Start in auto-cycle mode
+startAuto();
+</script>
+</body>
+</html>

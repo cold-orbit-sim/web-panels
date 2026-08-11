@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Shield Generator — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:16px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:220px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:8px; }
+.pills { display:flex; gap:6px; margin-top:8px; }
+.pill { font-size:10px; font-weight:700; letter-spacing:.14em; padding:2px 7px; border:1px solid currentColor; border-radius:2px; }
+.pill-active { color:#3ddc71; } .pill-dim { color:#5c7378; } .pill-amber { color:#ffb000; } .pill-green { color:#3ddc71; }
+</style></head><body>
+<h1>HARDPOINT MODULE — DEFLECTOR SHIELD GENERATOR</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:20px;">Top-down ship schematic. SK1–SK4 = facing select. SK5 = ON/OFF. Enc A = STRENGTH for selected facing.<br>OPEN ITEM: power balancing across facings — not implemented, flagged for design.</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">FORE SELECTED — ACTIVE</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <!-- Hull -->
+    <path d="M100,42 L130,60 L135,115 L130,165 L100,175 L70,165 L65,115 L70,60 Z"
+          fill="none" stroke="#ffb000" stroke-width="1.4" opacity="0.6"/>
+    <line x1="100" y1="42" x2="100" y2="175" stroke="#ffb000" stroke-width="0.6" opacity="0.25"/>
+    <ellipse cx="100" cy="72" rx="10" ry="7" fill="none" stroke="#ffb000" stroke-width="0.9" opacity="0.45"/>
+    <!-- FORE arc — selected (green, thick) -->
+    <path d="M 26 68 A 78 78 0 0 1 174 68" fill="none" stroke="#3ddc71" stroke-width="6"/>
+    <!-- AFT arc -->
+    <path d="M 26 162 A 78 78 0 0 0 174 162" fill="none" stroke="#ffb000" stroke-width="2.5" opacity="0.45"/>
+    <!-- PORT arc -->
+    <path d="M 32 66 A 78 78 0 0 0 32 164" fill="none" stroke="#ffb000" stroke-width="2.5" opacity="0.6"/>
+    <!-- STBD arc -->
+    <path d="M 168 66 A 78 78 0 0 1 168 164" fill="none" stroke="#ffb000" stroke-width="3" opacity="0.75"/>
+    <circle cx="16" cy="14" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-active">ACTIVE</span>
+    <span class="pill pill-green">FORE</span>
+  </div>
+  <div style="color:var(--text);font-size:14px;font-weight:700;margin-top:4px;letter-spacing:.06em;">80%</div>
+</div>
+
+<div class="card">
+  <div class="label">PORT SELECTED — ACTIVE</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <path d="M100,42 L130,60 L135,115 L130,165 L100,175 L70,165 L65,115 L70,60 Z"
+          fill="none" stroke="#ffb000" stroke-width="1.4" opacity="0.6"/>
+    <line x1="100" y1="42" x2="100" y2="175" stroke="#ffb000" stroke-width="0.6" opacity="0.25"/>
+    <ellipse cx="100" cy="72" rx="10" ry="7" fill="none" stroke="#ffb000" stroke-width="0.9" opacity="0.45"/>
+    <path d="M 26 68 A 78 78 0 0 1 174 68" fill="none" stroke="#ffb000" stroke-width="3.5" opacity="0.7"/>
+    <path d="M 26 162 A 78 78 0 0 0 174 162" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.4"/>
+    <!-- PORT arc — selected (green) -->
+    <path d="M 32 66 A 78 78 0 0 0 32 164" fill="none" stroke="#3ddc71" stroke-width="6"/>
+    <path d="M 168 66 A 78 78 0 0 1 168 164" fill="none" stroke="#ffb000" stroke-width="2.5" opacity="0.55"/>
+    <circle cx="16" cy="14" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-active">ACTIVE</span>
+    <span class="pill pill-green">PORT</span>
+  </div>
+  <div style="color:var(--text);font-size:14px;font-weight:700;margin-top:4px;letter-spacing:.06em;">55%</div>
+</div>
+
+<div class="card">
+  <div class="label">SHIELDS OFF</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <path d="M100,42 L130,60 L135,115 L130,165 L100,175 L70,165 L65,115 L70,60 Z"
+          fill="none" stroke="#ffb000" stroke-width="1.4" opacity="0.6"/>
+    <line x1="100" y1="42" x2="100" y2="175" stroke="#ffb000" stroke-width="0.6" opacity="0.25"/>
+    <!-- All arcs dim -->
+    <path d="M 26 68 A 78 78 0 0 1 174 68" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.15"/>
+    <path d="M 26 162 A 78 78 0 0 0 174 162" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.15"/>
+    <path d="M 32 66 A 78 78 0 0 0 32 164" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.15"/>
+    <path d="M 168 66 A 78 78 0 0 1 168 164" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.15"/>
+    <circle cx="16" cy="14" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-dim">INACTIVE</span>
+    <span class="pill pill-amber">FORE</span>
+  </div>
+  <div style="color:var(--dim);font-size:14px;font-weight:700;margin-top:4px;letter-spacing:.06em;">—</div>
+</div>
+
+<div class="card">
+  <div class="label">AFT SELECTED — ACTIVE (low fore, high stbd)</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <path d="M100,42 L130,60 L135,115 L130,165 L100,175 L70,165 L65,115 L70,60 Z"
+          fill="none" stroke="#ffb000" stroke-width="1.4" opacity="0.6"/>
+    <line x1="100" y1="42" x2="100" y2="175" stroke="#ffb000" stroke-width="0.6" opacity="0.25"/>
+    <path d="M 26 68 A 78 78 0 0 1 174 68" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.28"/>
+    <!-- AFT selected -->
+    <path d="M 26 162 A 78 78 0 0 0 174 162" fill="none" stroke="#3ddc71" stroke-width="6"/>
+    <path d="M 32 66 A 78 78 0 0 0 32 164" fill="none" stroke="#ffb000" stroke-width="3" opacity="0.6"/>
+    <path d="M 168 66 A 78 78 0 0 1 168 164" fill="none" stroke="#ffb000" stroke-width="5" opacity="0.9"/>
+    <circle cx="16" cy="14" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-active">ACTIVE</span>
+    <span class="pill pill-green">AFT</span>
+  </div>
+  <div style="color:var(--text);font-size:14px;font-weight:700;margin-top:4px;letter-spacing:.06em;">90%</div>
+</div>
+
+</div>
+<p style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:20px;">FLAG FOR REVIEW: Ship hull detail, arc radius/angle coverage, selected arc colour (green vs. brighter amber).<br>
+OPEN ITEM: Power balancing across facings — design question flagged, not implemented.</p>
+</body></html>

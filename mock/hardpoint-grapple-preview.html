@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grapple/Winch Rig — Graphic Preview</title>
+<style>
+:root {
+  --bg:           #06090b;
+  --panel:        #0d1418;
+  --panel-border: #1f2e33;
+  --text:         #d8e6e8;
+  --dim:          #5c7378;
+  --amber:        #ffb000;
+  --green:        #3ddc71;
+  --red:          #ff4d4d;
+  --font: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  padding: 32px 20px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 12px;
+  letter-spacing: 0.26em;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.preview-row {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.preview-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  width: min(500px, 90vw);
+}
+
+.preview-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+}
+.preview-label.deployed { color: var(--amber); }
+
+svg { display: block; width: 100%; }
+
+.overlay-state {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.st-free       { font-size: 18px; font-weight: 700; letter-spacing: 0.3em; color: var(--dim); }
+.st-attached   { font-size: 18px; font-weight: 700; letter-spacing: 0.3em; color: var(--green); }
+.st-retracted  { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim); }
+.st-deployed   { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--amber); }
+.st-readout    { font-size: 24px; font-weight: 700; color: var(--text); }
+</style>
+</head>
+<body>
+
+<h1>GRAPPLE / WINCH RIG — GRAPHIC PREVIEW</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:0.1em;text-align:center">
+  FLAG FOR REVIEW — approve or request changes before shipping
+</p>
+
+<div class="preview-row">
+
+  <!-- RETRACTED (armed but cable not deployed) -->
+  <div class="preview-card">
+    <div class="preview-label">STATE: ARMED / RETRACTED</div>
+    <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Winch drum -->
+      <ellipse cx="38" cy="100" rx="30" ry="30" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      <ellipse cx="38" cy="100" rx="18" ry="18" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+      <line x1="38" y1="70" x2="38" y2="82" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="38" y1="118" x2="38" y2="130" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="8" y1="100" x2="20" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="56" y1="100" x2="68" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="17" y1="79" x2="25" y2="87" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="59" y1="79" x2="51" y2="87" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="17" y1="121" x2="25" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="59" y1="121" x2="51" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <circle cx="38" cy="100" r="5.5" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+      <circle cx="38" cy="100" r="2.5" fill="var(--amber)" opacity="0.65"/>
+      <text x="38" y="148" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="1.2" opacity="0.5">WINCH</text>
+      <!-- Launcher housing -->
+      <rect x="68" y="82" width="160" height="36" rx="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <line x1="108" y1="82" x2="108" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="148" y1="82" x2="148" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="188" y1="82" x2="188" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <rect x="96" y="82" width="44" height="9" rx="2" fill="var(--bg)" stroke="var(--amber)" stroke-width="0.9" opacity="0.7"/>
+      <text x="148" y="78" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="1.5" opacity="0.42">LAUNCHER</text>
+      <!-- Barrel -->
+      <rect x="228" y="90" width="70" height="20" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      <line x1="250" y1="90" x2="250" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <line x1="270" y1="90" x2="270" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <line x1="290" y1="90" x2="290" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <rect x="298" y="87" width="8" height="26" rx="1" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+      <!-- No cable -->
+      <text x="200" y="158" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="monospace" letter-spacing="2.5" opacity="0.38">GRAPPLE / WINCH RIG</text>
+      <circle cx="18" cy="18" r="6" fill="var(--green)"/>
+    </svg>
+    <div class="overlay-state">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="st-free">FREE</span>
+        <span class="st-retracted">RETRACTED</span>
+      </div>
+      <span class="st-readout" style="color:var(--dim)">0 m</span>
+    </div>
+  </div>
+
+  <!-- DEPLOYED — medium cable -->
+  <div class="preview-card">
+    <div class="preview-label deployed">STATE: ARMED / DEPLOYED (50%)</div>
+    <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Winch drum -->
+      <ellipse cx="38" cy="100" rx="30" ry="30" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      <ellipse cx="38" cy="100" rx="18" ry="18" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+      <line x1="38" y1="70" x2="38" y2="82" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="38" y1="118" x2="38" y2="130" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="8" y1="100" x2="20" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="56" y1="100" x2="68" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="17" y1="79" x2="25" y2="87" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="59" y1="79" x2="51" y2="87" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="17" y1="121" x2="25" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="59" y1="121" x2="51" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <circle cx="38" cy="100" r="5.5" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+      <circle cx="38" cy="100" r="2.5" fill="var(--amber)" opacity="0.65"/>
+      <text x="38" y="148" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="1.2" opacity="0.5">WINCH</text>
+      <rect x="68" y="82" width="160" height="36" rx="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <line x1="108" y1="82" x2="108" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="148" y1="82" x2="148" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="188" y1="82" x2="188" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <rect x="96" y="82" width="44" height="9" rx="2" fill="var(--bg)" stroke="var(--amber)" stroke-width="0.9" opacity="0.7"/>
+      <text x="148" y="78" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="1.5" opacity="0.42">LAUNCHER</text>
+      <rect x="228" y="90" width="70" height="20" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      <line x1="250" y1="90" x2="250" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <line x1="270" y1="90" x2="270" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <line x1="290" y1="90" x2="290" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <rect x="298" y="87" width="8" height="26" rx="1" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+      <!-- Cable ~50% (87px of 174px max) → x2 = 393 -->
+      <line x1="306" y1="100" x2="393" y2="100" stroke="var(--amber)" stroke-width="1.6" opacity="0.82" stroke-dasharray="5 3"/>
+      <!-- Hook at x=393 (offset = 393-440 = -47) -->
+      <g transform="translate(-47,0)">
+        <line x1="440" y1="100" x2="440" y2="94" stroke="var(--amber)" stroke-width="1.6"/>
+        <path d="M440 94 L452 94 L452 108 Q452 117 443 117 Q434 117 434 108 L434 102" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+        <path d="M434 102 L428 108" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      </g>
+      <text x="200" y="158" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="monospace" letter-spacing="2.5" opacity="0.38">GRAPPLE / WINCH RIG</text>
+      <circle cx="18" cy="18" r="6" fill="var(--green)"/>
+    </svg>
+    <div class="overlay-state">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="st-free">FREE</span>
+        <span class="st-deployed">DEPLOYED</span>
+      </div>
+      <span class="st-readout">500 m</span>
+    </div>
+  </div>
+
+  <!-- DEPLOYED — full cable -->
+  <div class="preview-card">
+    <div class="preview-label deployed">STATE: ARMED / DEPLOYED (100%)</div>
+    <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="38" cy="100" rx="30" ry="30" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      <ellipse cx="38" cy="100" rx="18" ry="18" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+      <line x1="38" y1="70" x2="38" y2="82" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="38" y1="118" x2="38" y2="130" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="8" y1="100" x2="20" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="56" y1="100" x2="68" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      <line x1="17" y1="79" x2="25" y2="87" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="59" y1="79" x2="51" y2="87" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="17" y1="121" x2="25" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <line x1="59" y1="121" x2="51" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+      <circle cx="38" cy="100" r="5.5" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+      <circle cx="38" cy="100" r="2.5" fill="var(--amber)" opacity="0.65"/>
+      <text x="38" y="148" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="1.2" opacity="0.5">WINCH</text>
+      <rect x="68" y="82" width="160" height="36" rx="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <line x1="108" y1="82" x2="108" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="148" y1="82" x2="148" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="188" y1="82" x2="188" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <rect x="96" y="82" width="44" height="9" rx="2" fill="var(--bg)" stroke="var(--amber)" stroke-width="0.9" opacity="0.7"/>
+      <text x="148" y="78" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="1.5" opacity="0.42">LAUNCHER</text>
+      <rect x="228" y="90" width="70" height="20" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      <line x1="250" y1="90" x2="250" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <line x1="270" y1="90" x2="270" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <line x1="290" y1="90" x2="290" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+      <rect x="298" y="87" width="8" height="26" rx="1" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+      <!-- Cable full extent x2 = 306+174 = 480 -->
+      <line x1="306" y1="100" x2="480" y2="100" stroke="var(--amber)" stroke-width="1.6" opacity="0.82" stroke-dasharray="5 3"/>
+      <!-- Hook at x=480 (offset = 480-440 = +40) -->
+      <g transform="translate(40,0)">
+        <line x1="440" y1="100" x2="440" y2="94" stroke="var(--amber)" stroke-width="1.6"/>
+        <path d="M440 94 L452 94 L452 108 Q452 117 443 117 Q434 117 434 108 L434 102" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+        <path d="M434 102 L428 108" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+      </g>
+      <text x="200" y="158" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="monospace" letter-spacing="2.5" opacity="0.38">GRAPPLE / WINCH RIG</text>
+      <circle cx="18" cy="18" r="6" fill="var(--green)"/>
+    </svg>
+    <div class="overlay-state">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="st-free">FREE</span>
+        <span class="st-deployed">DEPLOYED</span>
+      </div>
+      <span class="st-readout">1000 m</span>
+    </div>
+  </div>
+
+</div>
+
+<p style="color:var(--dim);font-size:10px;letter-spacing:0.08em;text-align:center;max-width:620px;line-height:1.6">
+  Graphic description: left — winch drum (spoked wheel with hub) representing the cable spool.
+  Centre — rectangular launcher housing with cable guide trough. Barrel tube extending right from housing.
+  Muzzle end cap at barrel tip. Cable: dashed amber line extending right from muzzle when armed;
+  length scales with telemetry value vs max. Hook at cable end: J-hook with sharp tip (translates
+  with cable length via JS transform). ATTACHED/FREE label always shows FREE until sim-core field is defined.
+  DEPLOYED when telemetry value &gt; 0. Armed dot (top-left): green=armed, red=disarmed.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Reefer Pod — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; --red:#ff4d4d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:16px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:260px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:8px; }
+.fill-bar { height:10px; background:rgba(255,176,0,.12); border:1px solid var(--amber); border-radius:2px; overflow:hidden; margin:8px 0 4px; }
+.fill-inner { height:100%; background:var(--amber); opacity:.72; }
+.temp-ok { color:#3ddc71; } .temp-warn { color:#ffb000; } .temp-crit { color:#ff4d4d; }
+.temp-val { font-size:18px; font-weight:700; letter-spacing:.1em; margin-top:4px; }
+.fill-pct { font-size:42px; font-weight:700; color:var(--text); margin:8px 0 0; }
+</style></head><body>
+<h1>HARDPOINT MODULE — REEFER POD</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:20px;">Cargo/Storage. Temperature monitored, colour-coded. All soft keys blank.</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">TEMP IN-RANGE (OK)</div>
+  <svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <!-- Body -->
+    <rect x="50" y="10" width="360" height="80" rx="2" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <!-- Cooling fins top -->
+    <line x1="80"  y1="2"  x2="80"  y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="120" y1="2"  x2="120" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="160" y1="2"  x2="160" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="200" y1="2"  x2="200" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="240" y1="2"  x2="240" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="280" y1="2"  x2="280" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="320" y1="2"  x2="320" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="360" y1="2"  x2="360" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="400" y1="2"  x2="400" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <!-- Cooling fins bottom -->
+    <line x1="80"  y1="90" x2="80"  y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="120" y1="90" x2="120" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="160" y1="90" x2="160" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="200" y1="90" x2="200" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="240" y1="90" x2="240" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="280" y1="90" x2="280" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="320" y1="90" x2="320" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="360" y1="90" x2="360" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="400" y1="90" x2="400" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <!-- Temperature gauge -->
+    <rect x="220" y="100" width="20" height="60" rx="4" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <circle cx="230" cy="156" r="8" fill="none" stroke="#ffb000" stroke-width="1.4"/>
+    <rect x="228" y="116" width="4" height="30" rx="2" fill="#3ddc71" opacity="0.8"/>
+    <circle cx="230" cy="156" r="5" fill="#3ddc71" opacity="0.8"/>
+    <!-- Fill bar -->
+    <rect x="50" y="170" width="400" height="12" rx="2" fill="rgba(255,176,0,.12)" stroke="#ffb000" stroke-width="1"/>
+    <rect x="50" y="170" width="288" height="12" rx="2" fill="#ffb000" opacity="0.72"/>
+    <!-- Ribs -->
+    <line x1="170" y1="10" x2="170" y2="90" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <line x1="290" y1="10" x2="290" y2="90" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <!-- Status texts -->
+    <text x="260" y="140" text-anchor="middle" fill="#d8e6e8" font-size="20" font-family="monospace" font-weight="700">72%</text>
+    <text x="160" y="200" fill="#3ddc71" font-size="14" font-family="monospace" font-weight="700" letter-spacing="2">-18°C  OK</text>
+    <text x="160" y="215" fill="#5c7378" font-size="10" font-family="monospace" letter-spacing="2">MOCK: FROZEN GOODS</text>
+    <circle cx="56" cy="16" r="5" fill="#3ddc71"/>
+  </svg>
+  <div class="fill-pct">72%</div>
+  <div class="fill-bar"><div class="fill-inner" style="width:72%"></div></div>
+  <div class="temp-val temp-ok">-18°C</div>
+</div>
+
+<div class="card">
+  <div class="label">TEMP MARGINAL (WARN)</div>
+  <svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="50" y="10" width="360" height="80" rx="2" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <line x1="80"  y1="2"  x2="80"  y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="160" y1="2"  x2="160" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="240" y1="2"  x2="240" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="320" y1="2"  x2="320" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="400" y1="2"  x2="400" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="80"  y1="90" x2="80"  y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="160" y1="90" x2="160" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="240" y1="90" x2="240" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="320" y1="90" x2="320" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="400" y1="90" x2="400" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <rect x="220" y="100" width="20" height="60" rx="4" fill="none" stroke="#ffb000" stroke-width="1.2"/>
+    <circle cx="230" cy="156" r="8" fill="none" stroke="#ffb000" stroke-width="1.4"/>
+    <rect x="228" y="106" width="4" height="40" rx="2" fill="#ffb000" opacity="0.9"/>
+    <circle cx="230" cy="156" r="5" fill="#ffb000" opacity="0.9"/>
+    <rect x="50" y="170" width="400" height="12" rx="2" fill="rgba(255,176,0,.12)" stroke="#ffb000" stroke-width="1"/>
+    <rect x="50" y="170" width="250" height="12" rx="2" fill="#ffb000" opacity="0.72"/>
+    <text x="260" y="140" text-anchor="middle" fill="#d8e6e8" font-size="20" font-family="monospace" font-weight="700">63%</text>
+    <text x="160" y="200" fill="#ffb000" font-size="14" font-family="monospace" font-weight="700" letter-spacing="2">-14°C  WARN</text>
+    <text x="160" y="215" fill="#5c7378" font-size="10" font-family="monospace" letter-spacing="2">MOCK: FROZEN GOODS</text>
+    <circle cx="56" cy="16" r="5" fill="#3ddc71"/>
+  </svg>
+  <div class="fill-pct">63%</div>
+  <div class="fill-bar"><div class="fill-inner" style="width:63%"></div></div>
+  <div class="temp-val temp-warn">-14°C</div>
+</div>
+
+<div class="card">
+  <div class="label">TEMP OUT-OF-RANGE (CRIT)</div>
+  <svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="50" y="10" width="360" height="80" rx="2" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <line x1="80"  y1="2"  x2="80"  y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="160" y1="2"  x2="160" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="240" y1="2"  x2="240" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="320" y1="2"  x2="320" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="400" y1="2"  x2="400" y2="10" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="80"  y1="90" x2="80"  y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="160" y1="90" x2="160" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="240" y1="90" x2="240" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="320" y1="90" x2="320" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <line x1="400" y1="90" x2="400" y2="98" stroke="#ffb000" stroke-width="1.4" opacity="0.7"/>
+    <rect x="220" y="100" width="20" height="60" rx="4" fill="none" stroke="#ff4d4d" stroke-width="1.2"/>
+    <circle cx="230" cy="156" r="8" fill="none" stroke="#ff4d4d" stroke-width="1.4"/>
+    <rect x="228" y="100" width="4" height="46" rx="2" fill="#ff4d4d" opacity="0.9"/>
+    <circle cx="230" cy="156" r="5" fill="#ff4d4d" opacity="0.9"/>
+    <rect x="50" y="170" width="400" height="12" rx="2" fill="rgba(255,176,0,.12)" stroke="#ffb000" stroke-width="1"/>
+    <rect x="50" y="170" width="180" height="12" rx="2" fill="#ffb000" opacity="0.72"/>
+    <text x="260" y="140" text-anchor="middle" fill="#d8e6e8" font-size="20" font-family="monospace" font-weight="700">45%</text>
+    <text x="160" y="200" fill="#ff4d4d" font-size="14" font-family="monospace" font-weight="700" letter-spacing="2">-5°C  CRIT</text>
+    <text x="160" y="215" fill="#5c7378" font-size="10" font-family="monospace" letter-spacing="2">MOCK: FROZEN GOODS</text>
+    <circle cx="56" cy="16" r="5" fill="#3ddc71"/>
+  </svg>
+  <div class="fill-pct">45%</div>
+  <div class="fill-bar"><div class="fill-inner" style="width:45%"></div></div>
+  <div class="temp-val temp-crit">-5°C</div>
+</div>
+
+</div>
+<p style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:20px;">FLAG FOR REVIEW: Cooling fin density/size, temperature gauge placement and bulb style.</p>
+</body></html>

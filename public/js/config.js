@@ -35,6 +35,28 @@ export const TOPICS = {
   commsLog: "coldorbit/output/comms/log",
   // Full contacts array, retained — republished whenever the list or any range changes.
   commsTargets: "coldorbit/output/comms/targets",
+  // Full alerts array, retained — full replacement on every change. Empty = no alerts.
+  alerts: "coldorbit/output/alerts",
+  // Propulsion system state — retained, republished on any value change.
+  propulsionState: "coldorbit/output/propulsion/state",
+  // FTL drive state — retained, republished on any phase or value change.
+  ftlState: "coldorbit/output/ftl/state",
+  // Turret state — wildcard subscription; two topics, one per turret.
+  // See docs/turrets-mqtt-contract.md for the full payload shape.
+  turretState: "coldorbit/output/turrets/+/state",
+  // Client publishes here to confirm ammo type selection in loadout mode.
+  // Full path: coldorbit/input/turrets/<dorsal|ventral>/ammo
+  turretAmmoBase: "coldorbit/input/turrets",
+  // Missile tube state — wildcard subscription; four topics, one per tube.
+  // See HANDBACK.md (missiles session) for the full payload shape.
+  // Tubes: fore_port | fore_starboard | aft_port | aft_starboard
+  missileState: "coldorbit/output/missiles/+/state",
+  // Client publishes here to confirm missile type selection in loadout mode.
+  // Full path: coldorbit/input/missiles/<tube>/type
+  missileTypeBase: "coldorbit/input/missiles",
+  // Canonical repair queue — full array on every change, retained.
+  // See docs/repair-queue-mqtt-contract.md for the full payload shape.
+  repairQueue: "coldorbit/output/repair/queue",
 };
 
 // Regex for routing incoming hardpoint messages — kept here so there is
@@ -45,6 +67,14 @@ export const HARDPOINT_TOPIC_RE = /^coldorbit\/output\/hardpoints\/(\d)\/(module
 // Engineering wildcard router: extracts the system id from the topic.
 // Matches: coldorbit/output/engineering/<system>/state
 export const ENGINEERING_TOPIC_RE = /^coldorbit\/output\/engineering\/([^/]+)\/state$/;
+
+// Turret state router: extracts the turret id (dorsal|ventral) from the topic.
+// Matches: coldorbit/output/turrets/<turret>/state
+export const TURRET_TOPIC_RE = /^coldorbit\/output\/turrets\/(dorsal|ventral)\/state$/;
+
+// Missile state router: extracts the tube id from the topic.
+// Matches: coldorbit/output/missiles/<tube>/state
+export const MISSILE_TOPIC_RE = /^coldorbit\/output\/missiles\/([^/]+)\/state$/;
 
 export const MODES = [
   "engineering",

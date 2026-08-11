@@ -25,6 +25,11 @@ pub() {
   $PUB -t "coldorbit/output/engineering/${system}/state" -m "$payload"
 }
 
+pub_queue() {
+  local payload="$1"
+  $PUB -t "coldorbit/output/repair/queue" -m "$payload"
+}
+
 # ── initial seed values ──────────────────────────────────────────────────────
 
 seed() {
@@ -39,6 +44,10 @@ seed() {
   pub utility_3 '{"system":"utility_3", "health":74,"power_allocated":60,"power_unit":"kW","power_max":80,"disabled":false,"repair_queue_position":null}'
   pub utility_4 '{"system":"utility_4", "health":22,"power_allocated":20,"power_unit":"kW","power_max":80,"disabled":false,"repair_queue_position":3}'
   pub hull      '{"system":"hull",      "health":68,"power_allocated":null,"power_unit":null,"power_max":null,"disabled":false,"repair_queue_position":null}'
+
+  # Seed the canonical repair queue:
+  # engines = in_progress (180s), ftl = queued (60s), utility_4 = blocked (null)
+  pub_queue '[{"system":"engines","status":"in_progress","repair_eta_seconds":180,"health":48},{"system":"ftl","status":"queued","repair_eta_seconds":60,"health":61},{"system":"utility_4","status":"blocked","repair_eta_seconds":null,"health":22}]'
 
   echo "Seed complete."
 }
@@ -82,6 +91,9 @@ clamp() {
   fi
 }
 
+# Emits the value as JSON — 0 becomes null (no queue position)
+q_val() { [[ "$1" == "0" ]] && echo "null" || echo "$1"; }
+
 jitter() {
   # Returns -delta..+delta random integer
   local delta="$1"
@@ -109,23 +121,53 @@ while true; do
   p_ftl=$(clamp     $(( p_ftl     + $(jitter 10) )) 140 240)
   p_util4=$(clamp   $(( p_util4   + $(jitter 5)  )) 10  40)
 
-  pub engines   "{\"system\":\"engines\",   \"health\":$h_engines,\"power_allocated\":$p_engines,\"power_unit\":\"kW\",\"power_max\":500,\"disabled\":false,\"repair_queue_position\":$q_engines}"
-  pub ftl       "{\"system\":\"ftl\",       \"health\":$h_ftl,\"power_allocated\":$p_ftl,\"power_unit\":\"kW\",\"power_max\":300,\"disabled\":false,\"repair_queue_position\":$q_ftl}"
+  pub engines   "{\"system\":\"engines\",   \"health\":$h_engines,\"power_allocated\":$p_engines,\"power_unit\":\"kW\",\"power_max\":500,\"disabled\":false,\"repair_queue_position\":$(q_val $q_engines)}"
+  pub ftl       "{\"system\":\"ftl\",       \"health\":$h_ftl,\"power_allocated\":$p_ftl,\"power_unit\":\"kW\",\"power_max\":300,\"disabled\":false,\"repair_queue_position\":$(q_val $q_ftl)}"
   pub hull      "{\"system\":\"hull\",      \"health\":$h_hull,\"power_allocated\":null,\"power_unit\":null,\"power_max\":null,\"disabled\":false,\"repair_queue_position\":null}"
-  pub utility_4 "{\"system\":\"utility_4\", \"health\":$h_util4,\"power_allocated\":$p_util4,\"power_unit\":\"kW\",\"power_max\":80,\"disabled\":false,\"repair_queue_position\":$q_util4}"
+  pub utility_4 "{\"system\":\"utility_4\", \"health\":$h_util4,\"power_allocated\":$p_util4,\"power_unit\":\"kW\",\"power_max\":80,\"disabled\":false,\"repair_queue_position\":$(q_val $q_util4)}"
   pub weapons   "{\"system\":\"weapons\",   \"health\":$h_weapons,\"power_allocated\":$p_weapons,\"power_unit\":\"kW\",\"power_max\":400,\"disabled\":false,\"repair_queue_position\":null}"
   pub reactor   "{\"system\":\"reactor\",   \"health\":$h_reactor,\"power_allocated\":null,\"power_unit\":null,\"power_max\":null,\"disabled\":false,\"repair_queue_position\":null}"
   pub utility_3 "{\"system\":\"utility_3\", \"health\":$h_util3,\"power_allocated\":$p_util3,\"power_unit\":\"kW\",\"power_max\":80,\"disabled\":false,\"repair_queue_position\":null}"
 
-  # Every ~12 ticks, simulate a queue reorder
-  if (( tick % 3 == 0 )); then
-    # Rotate: engines → ftl → util4 → engines
-    tmp=$q_engines
-    q_engines=$q_ftl
-    q_ftl=$q_util4
-    q_util4=$tmp
-    echo "  [tick $tick] queue reorder: engines=#$q_engines ftl=#$q_ftl util4=#$q_util4"
-  fi
+  # Queue phase cycles every 5 ticks, giving 4 phases for ~80s full cycle:
+  #   Phase 0 (ticks 1-5):  engines in_progress, ftl queued, util4 blocked
+  #   Phase 1 (ticks 6-10): engines repaired — ftl in_progress, hull queued
+  #   Phase 2 (ticks 11-15): ftl repaired — hull in_progress only
+  #   Phase 3 (ticks 16-20): empty queue (ALL SYSTEMS NOMINAL)
+  queue_phase=$(( (tick / 5) % 4 ))
+
+  # Derive a rough ETA countdown within each phase (counts down over 5 ticks)
+  phase_tick=$(( tick % 5 ))
+  eta_engines=$(( 180 - phase_tick * 20 ))
+  eta_ftl=$(( 60  - phase_tick * 8  ))
+  eta_hull=$(( 120 - phase_tick * 15 ))
+
+  case $queue_phase in
+    0)
+      pub_queue "[{\"system\":\"engines\",\"status\":\"in_progress\",\"repair_eta_seconds\":$eta_engines,\"health\":$h_engines},{\"system\":\"ftl\",\"status\":\"queued\",\"repair_eta_seconds\":$eta_ftl,\"health\":$h_ftl},{\"system\":\"utility_4\",\"status\":\"blocked\",\"repair_eta_seconds\":null,\"health\":$h_util4}]"
+      echo "  [tick $tick] queue phase 0: engines=in_progress ftl=queued util4=blocked"
+      ;;
+    1)
+      pub_queue "[{\"system\":\"ftl\",\"status\":\"in_progress\",\"repair_eta_seconds\":$eta_ftl,\"health\":$h_ftl},{\"system\":\"hull\",\"status\":\"queued\",\"repair_eta_seconds\":$eta_hull,\"health\":$h_hull}]"
+      echo "  [tick $tick] queue phase 1: ftl=in_progress hull=queued"
+      ;;
+    2)
+      pub_queue "[{\"system\":\"hull\",\"status\":\"in_progress\",\"repair_eta_seconds\":$eta_hull,\"health\":$h_hull}]"
+      echo "  [tick $tick] queue phase 2: hull=in_progress only"
+      ;;
+    3)
+      pub_queue '[]'
+      echo "  [tick $tick] queue phase 3: empty (ALL SYSTEMS NOMINAL)"
+      ;;
+  esac
+
+  # Update per-system state queue positions to stay roughly consistent with phase
+  case $queue_phase in
+    0) q_engines=1; q_ftl=2; q_util4=3 ;;
+    1) q_engines=0; q_ftl=1; q_util4=0 ;;
+    2) q_engines=0; q_ftl=0; q_util4=0 ;;
+    3) q_engines=0; q_ftl=0; q_util4=0 ;;
+  esac
 
   echo "  [tick $tick] engines=${h_engines}% engines_pwr=${p_engines}kW hull=${h_hull}% util4=${h_util4}%"
 done

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Scanner Array — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:16px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:240px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:8px; }
+.pills { display:flex; gap:6px; margin-top:8px; }
+.pill { font-size:10px; font-weight:700; letter-spacing:.14em; padding:2px 7px; border:1px solid currentColor; border-radius:2px; }
+.pill-active { color:#3ddc71; } .pill-dim { color:#5c7378; } .pill-amber { color:#ffb000; }
+@keyframes pulse-ring { 0% { r:8; opacity:.85; } 100% { r:70; opacity:0; } }
+.pr1 { animation: pulse-ring 2.4s 0.0s ease-out infinite; }
+.pr2 { animation: pulse-ring 2.4s 0.8s ease-out infinite; }
+.pr3 { animation: pulse-ring 2.4s 1.6s ease-out infinite; }
+</style></head><body>
+<h1>HARDPOINT MODULE — LONG-RANGE SCANNER ARRAY</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:20px;">All 4 mode combos: Active/Passive × Pulse/Beam. SK6 dims when Passive.</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">ACTIVE + PULSE (rings animate)</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <!-- Body -->
+    <rect x="80" y="155" width="40" height="30" rx="2" fill="none" stroke="#ffb000" stroke-width="1.6"/>
+    <rect x="88" y="185" width="24" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.1"/>
+    <!-- Arm -->
+    <line x1="100" y1="155" x2="100" y2="120" stroke="#ffb000" stroke-width="2.2"/>
+    <!-- Dish -->
+    <path d="M 20 120 Q 100 52 180 120" fill="none" stroke="#ffb000" stroke-width="2.2"/>
+    <line x1="100" y1="74" x2="100" y2="120" stroke="#ffb000" stroke-width="0.8" opacity="0.4"/>
+    <!-- Feed horn -->
+    <rect x="94" y="66" width="12" height="14" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="100" cy="64" r="3" fill="#ffb000" opacity="0.7"/>
+    <!-- Pulse rings -->
+    <circle class="pr1" cx="100" cy="64" r="8" fill="none" stroke="#ffb000" stroke-width="1.4"/>
+    <circle class="pr2" cx="100" cy="64" r="8" fill="none" stroke="#ffb000" stroke-width="1.4"/>
+    <circle class="pr3" cx="100" cy="64" r="8" fill="none" stroke="#ffb000" stroke-width="1.4"/>
+    <circle cx="16" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-active">ACTIVE</span>
+    <span class="pill pill-amber">PULSE</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">ACTIVE + BEAM (cone shows)</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="80" y="155" width="40" height="30" rx="2" fill="none" stroke="#ffb000" stroke-width="1.6"/>
+    <rect x="88" y="185" width="24" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.1"/>
+    <line x1="100" y1="155" x2="100" y2="120" stroke="#ffb000" stroke-width="2.2"/>
+    <path d="M 20 120 Q 100 52 180 120" fill="none" stroke="#ffb000" stroke-width="2.2"/>
+    <line x1="100" y1="74" x2="100" y2="120" stroke="#ffb000" stroke-width="0.8" opacity="0.4"/>
+    <rect x="94" y="66" width="12" height="14" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="100" cy="64" r="3" fill="#ffb000" opacity="0.7"/>
+    <!-- Beam cone -->
+    <polygon points="100,64 78,4 122,4" fill="#ffb000" opacity="0.08"/>
+    <line x1="100" y1="64" x2="78" y2="4" stroke="#ffb000" stroke-width="1.1" opacity="0.5"/>
+    <line x1="100" y1="64" x2="122" y2="4" stroke="#ffb000" stroke-width="1.1" opacity="0.5"/>
+    <line x1="100" y1="64" x2="100" y2="4" stroke="#ffb000" stroke-width="1.8" opacity="0.7"/>
+    <circle cx="16" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-active">ACTIVE</span>
+    <span class="pill pill-amber">BEAM</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">PASSIVE + PULSE (SK6 dimmed)</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="80" y="155" width="40" height="30" rx="2" fill="none" stroke="#ffb000" stroke-width="1.6"/>
+    <rect x="88" y="185" width="24" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.1"/>
+    <line x1="100" y1="155" x2="100" y2="120" stroke="#ffb000" stroke-width="2.2"/>
+    <path d="M 20 120 Q 100 52 180 120" fill="none" stroke="#ffb000" stroke-width="2.2"/>
+    <line x1="100" y1="74" x2="100" y2="120" stroke="#ffb000" stroke-width="0.8" opacity="0.4"/>
+    <rect x="94" y="66" width="12" height="14" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="100" cy="64" r="3" fill="#ffb000" opacity="0.3"/>
+    <!-- No beam, no rings -->
+    <circle cx="16" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-dim">PASSIVE</span>
+    <span class="pill pill-dim">PULSE</span>
+  </div>
+  <div style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:6px;">SK6 label dimmed. Enc-B label dimmed.</div>
+</div>
+
+<div class="card">
+  <div class="label">PASSIVE + BEAM (SK6 dimmed)</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="80" y="155" width="40" height="30" rx="2" fill="none" stroke="#ffb000" stroke-width="1.6"/>
+    <rect x="88" y="185" width="24" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.1"/>
+    <line x1="100" y1="155" x2="100" y2="120" stroke="#ffb000" stroke-width="2.2"/>
+    <path d="M 20 120 Q 100 52 180 120" fill="none" stroke="#ffb000" stroke-width="2.2"/>
+    <line x1="100" y1="74" x2="100" y2="120" stroke="#ffb000" stroke-width="0.8" opacity="0.4"/>
+    <rect x="94" y="66" width="12" height="14" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="100" cy="64" r="3" fill="#ffb000" opacity="0.3"/>
+    <!-- No emission: passive mode, beam setting irrelevant -->
+    <circle cx="16" cy="16" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pills">
+    <span class="pill pill-dim">PASSIVE</span>
+    <span class="pill pill-dim">BEAM</span>
+  </div>
+  <div style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:6px;">No emission. SK6 + Enc-B dimmed.</div>
+</div>
+
+</div>
+<p style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:20px;">FLAG FOR REVIEW: Dish proportions, feed horn position, pulse ring radius range, beam cone angle.</p>
+</body></html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>PD Turret Pod — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:16px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:220px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:8px; }
+.pill { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.14em; padding:2px 8px; border:1px solid currentColor; border-radius:2px; margin-top:6px; }
+.pill-active { color:#3ddc71; } .pill-dim { color:#5c7378; }
+@keyframes pd-rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+#barrels-engaged { transform-box:fill-box; transform-origin:center; animation: pd-rotate 1.4s linear infinite; }
+</style></head><body>
+<h1>HARDPOINT MODULE — POINT-DEFENSE TURRET POD</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:20px;">SK5 = ENGAGE/DISENGAGE. When engaged, barrel assembly rotates. STANDBY = static.</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">STANDBY</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <!-- Mount base -->
+    <rect x="60" y="162" width="80" height="30" rx="3" fill="none" stroke="#ffb000" stroke-width="1.6"/>
+    <rect x="76" y="186" width="48" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.1"/>
+    <!-- Dome -->
+    <path d="M 44 162 Q 44 84 100 68 Q 156 84 156 162" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <path d="M 58 138 Q 58 98 100 84 Q 142 98 142 138" fill="none" stroke="#ffb000" stroke-width="0.9" opacity="0.4"/>
+    <!-- Barrel assembly (static) -->
+    <g id="barrels-standby">
+      <circle cx="100" cy="68" r="9" fill="none" stroke="#ffb000" stroke-width="1.8"/>
+      <circle cx="100" cy="68" r="3.5" fill="#ffb000" opacity="0.7"/>
+      <rect x="97" y="26" width="6" height="38" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <rect x="97" y="68" width="6" height="38" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <rect x="58"  y="65" width="38" height="6" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <rect x="104" y="65" width="38" height="6" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <circle cx="100" cy="28" r="4" fill="#ffb000" opacity="0.45"/>
+      <circle cx="100" cy="104" r="4" fill="#ffb000" opacity="0.45"/>
+      <circle cx="60"  cy="68" r="4" fill="#ffb000" opacity="0.45"/>
+      <circle cx="140" cy="68" r="4" fill="#ffb000" opacity="0.45"/>
+    </g>
+    <circle cx="16" cy="14" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pill pill-dim">STANDBY</div>
+</div>
+
+<div class="card">
+  <div class="label">ENGAGED (barrel assembly rotates)</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="60" y="162" width="80" height="30" rx="3" fill="none" stroke="#ffb000" stroke-width="1.6"/>
+    <rect x="76" y="186" width="48" height="12" rx="2" fill="none" stroke="#ffb000" stroke-width="1.1"/>
+    <path d="M 44 162 Q 44 84 100 68 Q 156 84 156 162" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <path d="M 58 138 Q 58 98 100 84 Q 142 98 142 138" fill="none" stroke="#ffb000" stroke-width="0.9" opacity="0.4"/>
+    <!-- Barrel assembly (rotates when engaged) -->
+    <g id="barrels-engaged">
+      <circle cx="100" cy="68" r="9" fill="none" stroke="#ffb000" stroke-width="1.8"/>
+      <circle cx="100" cy="68" r="3.5" fill="#ffb000" opacity="0.7"/>
+      <rect x="97" y="26" width="6" height="38" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <rect x="97" y="68" width="6" height="38" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <rect x="58"  y="65" width="38" height="6" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <rect x="104" y="65" width="38" height="6" rx="2" fill="none" stroke="#ffb000" stroke-width="1.5"/>
+      <circle cx="100" cy="28" r="4" fill="#ffb000" opacity="0.6"/>
+      <circle cx="100" cy="104" r="4" fill="#ffb000" opacity="0.6"/>
+      <circle cx="60"  cy="68" r="4" fill="#ffb000" opacity="0.6"/>
+      <circle cx="140" cy="68" r="4" fill="#ffb000" opacity="0.6"/>
+    </g>
+    <circle cx="16" cy="14" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="pill pill-active">ENGAGED</div>
+</div>
+
+</div>
+<p style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:20px;">FLAG FOR REVIEW: Barrel count (4 shown — want more?), dome shape, rotation speed.</p>
+</body></html>

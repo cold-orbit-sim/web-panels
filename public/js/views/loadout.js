@@ -5,12 +5,12 @@
 // topic. Selections persist across open/close cycles within a page session.
 
 const MODULES = [
-  { category: "empty",        name: null },
-  { category: "utility_tool", name: "Mining Laser" },
-  { category: "utility_tool", name: "Tractor Beam" },
-  { category: "utility_tool", name: "Cutting Torch" },
-  { category: "utility_tool", name: "Repair Arm" },
+  { category: "empty",         name: null },
+  { category: "utility_tool",  name: "Mining Laser" },
+  { category: "utility_tool",  name: "Cutting/Welding Torch" },
+  { category: "utility_tool",  name: "Grapple/Winch Rig" },
   { category: "cargo_storage", name: "Cargo Pod" },
+  { category: "sensor_ew",    name: "Tractor Beam" },
   { category: "sensor_ew",    name: "Tracking Suite" },
   { category: "sensor_ew",    name: "Prospecting Array" },
   { category: "sensor_ew",    name: "Stealth Package" },
@@ -28,7 +28,7 @@ const CATEGORY_LABELS = {
 };
 
 // Default: one module per category, sensible starting loadout.
-const DEFAULT_INDEXES = [1, 5, 6, 9]; // Mining Laser, Cargo Pod, Tracking Suite, Shields
+const DEFAULT_INDEXES = [1, 4, 6, 9]; // Mining Laser, Cargo Pod, Tracking Suite, Shields
 
 // Per-slot selected index into MODULES[]. Persists across open/close.
 const selections = [...DEFAULT_INDEXES];

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cutting/Welding Torch — Graphic Preview</title>
+<style>
+:root {
+  --bg:           #06090b;
+  --panel:        #0d1418;
+  --panel-border: #1f2e33;
+  --text:         #d8e6e8;
+  --dim:          #5c7378;
+  --amber:        #ffb000;
+  --green:        #3ddc71;
+  --red:          #ff4d4d;
+  --font: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  padding: 32px 20px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 12px;
+  letter-spacing: 0.26em;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.preview-row {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.preview-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  width: min(480px, 90vw);
+}
+
+.preview-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+}
+.preview-label.weld { color: var(--amber); }
+.preview-label.cut  { color: var(--red);   }
+.preview-label.safe { color: var(--dim);   }
+
+svg { display: block; width: 100%; }
+
+.overlay-state {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.st-active { font-size: 18px; font-weight: 700; letter-spacing: 0.3em; color: var(--green); }
+.st-safe   { font-size: 18px; font-weight: 700; letter-spacing: 0.3em; color: var(--dim);   }
+.st-mode-weld { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--amber); }
+.st-mode-cut  { font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: var(--red);   }
+.st-readout { font-size: 24px; font-weight: 700; color: var(--text); }
+
+@keyframes arc-flicker {
+  0%, 100% { opacity: 0.92; }
+  30%       { opacity: 0.65; }
+  60%       { opacity: 0.98; }
+}
+@keyframes weld-breathe {
+  0%, 100% { opacity: 0.82; }
+  50%       { opacity: 1.0;  }
+}
+.anim-cut  { animation: arc-flicker  0.12s linear      infinite; }
+.anim-weld { animation: weld-breathe 0.9s  ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<h1>CUTTING / WELDING TORCH — GRAPHIC PREVIEW</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:0.1em;text-align:center">
+  FLAG FOR REVIEW — approve or request changes before shipping
+</p>
+
+<div class="preview-row">
+
+  <!-- SAFE -->
+  <div class="preview-card">
+    <div class="preview-label safe">STATE: SAFE / DISARMED</div>
+    <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Coupling -->
+      <rect x="8" y="72" width="38" height="56" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+      <rect x="2" y="81" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <rect x="2" y="95" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <rect x="2" y="109" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <text x="27" y="103" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="0.5" opacity="0.55">PWR</text>
+      <!-- Neck -->
+      <rect x="46" y="92" width="18" height="16" fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+      <!-- Body -->
+      <rect x="64" y="74" width="160" height="52" rx="4" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <line x1="104" y1="74" x2="104" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="144" y1="74" x2="144" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="184" y1="74" x2="184" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <rect x="80"  y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="106" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="132" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="158" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="80"  y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="106" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="132" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="158" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <!-- Nozzle -->
+      <path d="M224 80 L268 85 L280 91 L284 100 L280 109 L268 115 L224 120" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <ellipse cx="252" cy="100" rx="3" ry="17" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.55"/>
+      <ellipse cx="284" cy="100" rx="2" ry="10" fill="none" stroke="var(--amber)" stroke-width="1.5" opacity="0.8"/>
+      <!-- No arc -->
+      <text x="170" y="158" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="monospace" letter-spacing="2.5" opacity="0.38">CUTTING / WELDING TORCH</text>
+      <circle cx="18" cy="18" r="6" fill="var(--red)"/>
+    </svg>
+    <div class="overlay-state">
+      <span class="st-safe">SAFE</span>
+      <span class="st-readout" style="color:var(--dim)">—</span>
+    </div>
+  </div>
+
+  <!-- WELD MODE active -->
+  <div class="preview-card">
+    <div class="preview-label weld">STATE: ACTIVE — WELD MODE</div>
+    <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="72" width="38" height="56" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+      <rect x="2" y="81" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <rect x="2" y="95" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <rect x="2" y="109" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <text x="27" y="103" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="0.5" opacity="0.55">PWR</text>
+      <rect x="46" y="92" width="18" height="16" fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+      <rect x="64" y="74" width="160" height="52" rx="4" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <line x1="104" y1="74" x2="104" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="144" y1="74" x2="144" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="184" y1="74" x2="184" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <rect x="80" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="106" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="132" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="158" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="80" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="106" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="132" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="158" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <path d="M224 80 L268 85 L280 91 L284 100 L280 109 L268 115 L224 120" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <ellipse cx="252" cy="100" rx="3" ry="17" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.55"/>
+      <ellipse cx="284" cy="100" rx="2" ry="10" fill="none" stroke="var(--amber)" stroke-width="1.5" opacity="0.8"/>
+      <!-- WELD arc — animated -->
+      <g class="anim-weld">
+        <path d="M287 100 Q310 78 336 100 Q362 122 388 100" fill="none" stroke="var(--amber)" stroke-width="3.5" opacity="0.9"/>
+        <path d="M287 100 Q310 78 336 100 Q362 122 388 100" fill="none" stroke="var(--amber)" stroke-width="12" opacity="0.15"/>
+        <ellipse cx="336" cy="118" rx="22" ry="10" fill="var(--amber)" opacity="0.1"/>
+      </g>
+      <text x="170" y="158" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="monospace" letter-spacing="2.5" opacity="0.38">CUTTING / WELDING TORCH</text>
+      <circle cx="18" cy="18" r="6" fill="var(--green)"/>
+    </svg>
+    <div class="overlay-state">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="st-active">ACTIVE</span>
+        <span class="st-mode-weld">WELD MODE</span>
+      </div>
+      <span class="st-readout">280 kW</span>
+    </div>
+  </div>
+
+  <!-- CUT MODE active -->
+  <div class="preview-card">
+    <div class="preview-label cut">STATE: ACTIVE — CUT MODE</div>
+    <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="72" width="38" height="56" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+      <rect x="2" y="81" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <rect x="2" y="95" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <rect x="2" y="109" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+      <text x="27" y="103" text-anchor="middle" fill="var(--amber)" font-size="7" font-family="monospace" letter-spacing="0.5" opacity="0.55">PWR</text>
+      <rect x="46" y="92" width="18" height="16" fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+      <rect x="64" y="74" width="160" height="52" rx="4" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <line x1="104" y1="74" x2="104" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="144" y1="74" x2="144" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <line x1="184" y1="74" x2="184" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+      <rect x="80" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="106" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="132" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="158" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="80" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="106" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="132" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <rect x="158" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+      <path d="M224 80 L268 85 L280 91 L284 100 L280 109 L268 115 L224 120" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <ellipse cx="252" cy="100" rx="3" ry="17" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.55"/>
+      <ellipse cx="284" cy="100" rx="2" ry="10" fill="none" stroke="var(--amber)" stroke-width="1.5" opacity="0.8"/>
+      <!-- CUT arc — animated flicker -->
+      <g class="anim-cut">
+        <path d="M287 100 L302 88 L316 103 L330 87 L344 98 L358 92 L372 100"
+              fill="none" stroke="var(--red)" stroke-width="3" opacity="0.9"/>
+        <path d="M287 100 L302 88 L316 103 L330 87 L344 98 L358 92 L372 100"
+              fill="none" stroke="var(--red)" stroke-width="10" opacity="0.16"/>
+        <line x1="316" y1="96" x2="324" y2="78" stroke="#ff8888" stroke-width="1.4" opacity="0.7"/>
+        <line x1="330" y1="90" x2="340" y2="74" stroke="#ff8888" stroke-width="1.4" opacity="0.7"/>
+        <line x1="302" y1="100" x2="294" y2="118" stroke="#ff8888" stroke-width="1.4" opacity="0.6"/>
+        <line x1="344" y1="93" x2="352" y2="110" stroke="#ff8888" stroke-width="1.4" opacity="0.6"/>
+      </g>
+      <text x="170" y="158" text-anchor="middle" fill="var(--amber)" font-size="8" font-family="monospace" letter-spacing="2.5" opacity="0.38">CUTTING / WELDING TORCH</text>
+      <circle cx="18" cy="18" r="6" fill="var(--green)"/>
+    </svg>
+    <div class="overlay-state">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="st-active">ACTIVE</span>
+        <span class="st-mode-cut">CUT MODE</span>
+      </div>
+      <span class="st-readout">420 kW</span>
+    </div>
+  </div>
+
+</div>
+
+<p style="color:var(--dim);font-size:10px;letter-spacing:0.08em;text-align:center;max-width:600px;line-height:1.6">
+  Graphic description: shorter, wider body than the mining laser. Heat-dissipator vent slots on top and bottom.
+  Hexagonally flared nozzle with visible exit aperture. Arc at tip:
+  WELD MODE — smooth sinusoidal amber arc with warm glow puddle below (breathing pulse animation);
+  CUT MODE — jagged zigzag red plasma arc with spark lines (rapid flicker animation).
+  Armed dot (top-left): green=armed, red=disarmed. Mode stored in client state (no MQTT source yet).
+</p>
+
+</body>
+</html>

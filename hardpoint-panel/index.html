@@ -5,30 +5,1819 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Cold Orbit — Hardpoint Panel</title>
 <style>
-  html, body {
-    margin: 0;
-    height: 100%;
-    background: #06090b;
-    color: #5c7378;
-    font-family: ui-monospace, "SF Mono", "Consolas", monospace;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  h1 {
-    color: #ffb000;
-    letter-spacing: 0.2em;
-    font-size: clamp(20px, 5vw, 36px);
-    margin: 0 0 12px;
-  }
-  p { margin: 0; font-size: clamp(12px, 2vw, 16px); }
+/* Prevent CSS display rules from overriding the HTML hidden attribute */
+[hidden] { display: none !important; }
+
+:root {
+  --bg:           #06090b;
+  --panel:        #0d1418;
+  --panel-border: #1f2e33;
+  --text:         #d8e6e8;
+  --dim:          #5c7378;
+  --amber:        #ffb000;
+  --green:        #3ddc71;
+  --red:          #ff4d4d;
+  --blue:         #4dc3ff;
+  --font: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Error / waiting full-screen states ───────────────────────────────── */
+
+.state-fill {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+.state-fill-title {
+  color: var(--amber);
+  font-size: clamp(18px, 4vw, 36px);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+}
+
+.state-fill-sub {
+  color: var(--dim);
+  font-size: clamp(11px, 1.6vw, 16px);
+  letter-spacing: 0.12em;
+}
+
+/* ── Root panel layout: left strip | center col | right strip ─────────── */
+
+#panel-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+}
+
+/* ── Soft-key strips ──────────────────────────────────────────────────── */
+
+.sk-strip {
+  flex: 0 0 18%;
+  max-width: 160px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+}
+
+.sk-strip--left  { border-right: 2px solid var(--panel-border); }
+.sk-strip--right { border-left:  2px solid var(--panel-border); }
+
+.sk-cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(8px, 1.4vw, 18px);
+  border-bottom: 1px solid var(--panel-border);
+  font-size: clamp(13px, 2.2vh, 22px);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text);
+  min-height: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sk-cell:last-child { border-bottom: none; }
+
+.sk-cell--left  { justify-content: flex-end; }
+.sk-cell--right { justify-content: flex-start; }
+
+.sk-cell.sk-blank { color: transparent; }
+
+/* loadout dims the strips */
+.loadout-active .sk-strip,
+.loadout-active .enc-strip {
+  opacity: 0.38;
+}
+
+/* ── Center column ────────────────────────────────────────────────────── */
+
+.center-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Central area ─────────────────────────────────────────────────────── */
+
+.central-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Central state messages (connecting / not-implemented / empty) ─────── */
+
+.central-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(13px, 2.4vh, 22px);
+  letter-spacing: 0.22em;
+  font-weight: 600;
+}
+
+.central-msg.connecting {
+  color: var(--dim);
+  animation: connecting-pulse 2s ease-in-out infinite;
+}
+
+@keyframes connecting-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.28; }
+}
+
+.central-msg.dim-label { color: var(--dim); }
+
+/* ── Module views ─────────────────────────────────────────────────────── */
+
+.module-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* SVG fills the full central area */
+.module-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Armed dot — top-left corner */
+.armed-dot {
+  position: absolute;
+  top: clamp(8px, 1.5vh, 16px);
+  left: clamp(8px, 1.5vw, 16px);
+  width: clamp(9px, 1.4vh, 14px);
+  height: clamp(9px, 1.4vh, 14px);
+  border-radius: 50%;
+  background: var(--red);
+  z-index: 10;
+  transition: background 300ms;
+}
+.armed-dot.armed { background: var(--green); }
+
+/* Slot label — top-right corner, very dim */
+.slot-label {
+  position: absolute;
+  top: clamp(6px, 1.2vh, 12px);
+  right: clamp(8px, 1.5vw, 16px);
+  font-size: clamp(10px, 1.4vh, 14px);
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  opacity: 0.45;
+  z-index: 10;
+}
+
+/* Active/safe indicator — large, prominent, upper centre */
+.status-active {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(20px, 4.5vh, 44px);
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  color: var(--dim);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: color 300ms;
+}
+.status-active.is-active { color: var(--green); }
+
+/* Mode label (torch) — secondary, below active indicator */
+.status-mode {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(14px, 2.8vh, 28px);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.status-mode.weld { color: var(--amber); }
+.status-mode.cut  { color: var(--red);   }
+
+/* Deploy state label (grapple) — same position as mode label */
+.status-deploy {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(14px, 2.8vh, 28px);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--dim);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: color 300ms;
+}
+.status-deploy.deployed { color: var(--amber); }
+
+/* Large readout number — lower centre */
+.status-readout {
+  position: absolute;
+  bottom: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(26px, 6vh, 58px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── SVG beam/arc/cable animations ────────────────────────────────────── */
+
+#laser-beam {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.module-active #laser-beam {
+  opacity: 1;
+  animation: beam-pulse 1.6s ease-in-out infinite;
+}
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.82; }
+  50%       { opacity: 1.0;  }
+}
+
+.torch-arc-cut, .torch-arc-weld { display: none; }
+
+#torch-arc { opacity: 0; transition: opacity 0.35s; }
+.module-active #torch-arc { opacity: 1; }
+
+.torch-cut  .torch-arc-cut  { display: inline; }
+.torch-weld .torch-arc-weld { display: inline; }
+
+.module-active.torch-cut .torch-arc-cut {
+  animation: arc-flicker 0.12s linear infinite;
+}
+@keyframes arc-flicker {
+  0%, 100% { opacity: 0.92; }
+  30%       { opacity: 0.65; }
+  60%       { opacity: 0.98; }
+}
+
+.module-active.torch-weld .torch-arc-weld {
+  animation: weld-breathe 0.9s ease-in-out infinite;
+}
+@keyframes weld-breathe {
+  0%, 100% { opacity: 0.82; }
+  50%       { opacity: 1.0;  }
+}
+
+#grapple-cable { opacity: 0; transition: opacity 0.3s; }
+.cable-visible #grapple-cable { opacity: 1; }
+
+/* ── Loadout overlay ──────────────────────────────────────────────────── */
+
+.loadout-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 9, 11, 0.84);
+  z-index: 50;
+  gap: clamp(6px, 1.2vh, 14px);
+}
+
+.loadout-overlay-main {
+  font-size: clamp(22px, 5vw, 48px);
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--amber);
+}
+
+.loadout-overlay-sub {
+  font-size: clamp(13px, 2.4vw, 24px);
+  letter-spacing: 0.22em;
+  color: var(--amber);
+  opacity: 0.65;
+}
+
+/* ── SK selected / dimmed ─────────────────────────────────────────────── */
+.sk-cell.sk-dim { color: var(--dim); }
+.sk-cell.sk-sel { color: var(--green); }
+
+/* ── Status pills ─────────────────────────────────────────────────────── */
+.status-pill-row {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: clamp(6px, 1.2vw, 14px);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.status-pill-row.row-top { top: 12%; }
+.status-pill-row.row-mid { top: 30%; }
+
+.status-pill {
+  font-size: clamp(11px, 1.8vh, 17px);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+.pill-active { color: var(--green); }
+.pill-dim    { color: var(--dim);   }
+.pill-amber  { color: var(--amber); }
+.pill-red    { color: var(--red);   }
+
+/* ── Large central readout (fill %, decoy count) ──────────────────────── */
+.status-large {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(36px, 9vh, 80px);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── Fill bar (cargo) ─────────────────────────────────────────────────── */
+.fill-bar-track {
+  position: absolute;
+  left: 10%; right: 10%;
+  top: 28%;
+  height: clamp(8px, 1.4vh, 14px);
+  background: rgba(255, 176, 0, 0.12);
+  border: 1px solid var(--amber);
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 10;
+}
+.fill-bar-inner {
+  height: 100%;
+  background: var(--amber);
+  opacity: 0.72;
+  transition: width 0.5s;
+}
+
+/* ── Contents / ore filter label ──────────────────────────────────────── */
+.status-sub-label {
+  position: absolute;
+  top: 33%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(11px, 1.8vh, 16px);
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+/* ── Temperature (reefer) ─────────────────────────────────────────────── */
+.status-temp {
+  position: absolute;
+  top: 39%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(15px, 2.8vh, 26px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.temp-ok   { color: var(--green); }
+.temp-warn { color: var(--amber); }
+.temp-crit { color: var(--red);   }
+
+/* ── Scan-active label (prospecting) ─────────────────────────────────── */
+.status-scan {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(12px, 2vh, 19px);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  z-index: 10;
+  pointer-events: none;
+}
+.status-scan.scanning { color: var(--amber); animation: connecting-pulse 0.8s ease-in-out infinite; }
+
+/* ── Missile lock warning overlay ────────────────────────────────────── */
+.lock-warning-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--red);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes lock-flash {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.38; }
+}
+.missile-lock .lock-warning-overlay { animation: lock-flash 0.55s ease-in-out infinite; }
+
+/* ── Scanner beam cone / pulse rings ─────────────────────────────────── */
+#scanner-beam-cone { opacity: 0; transition: opacity 0.3s; }
+.scanner-beam-active #scanner-beam-cone { opacity: 1; }
+
+.scanner-pulse-ring { fill: none; stroke: var(--amber); stroke-width: 1.5; opacity: 0; }
+.scanner-pulse-mode .scanner-pulse-ring { opacity: 1; }
+.scanner-pulse-mode .scanner-pulse-ring:nth-child(1) { animation: pulse-ring 2.4s 0.0s  ease-out infinite; }
+.scanner-pulse-mode .scanner-pulse-ring:nth-child(2) { animation: pulse-ring 2.4s 0.8s  ease-out infinite; }
+.scanner-pulse-mode .scanner-pulse-ring:nth-child(3) { animation: pulse-ring 2.4s 1.6s  ease-out infinite; }
+@keyframes pulse-ring {
+  0%   { r: 8;  opacity: 0.85; }
+  100% { r: 72; opacity: 0;    }
+}
+
+/* ── Stealth element shimmer ─────────────────────────────────────────── */
+.stealth-el { opacity: 0.18; transition: opacity 0.3s; }
+@keyframes stealth-shimmer {
+  0%, 100% { opacity: 0.18; }
+  50%       { opacity: 0.9;  }
+}
+.stealth-on .stealth-el { animation: stealth-shimmer 2.2s ease-in-out infinite; }
+.stealth-on .stealth-el:nth-child(3n+1) { animation-delay: 0.3s; }
+.stealth-on .stealth-el:nth-child(3n+2) { animation-delay: 0.9s; }
+.stealth-on .stealth-el:nth-child(5n+3) { animation-delay: 1.5s; }
+
+/* ── Prospecting beam pulse ──────────────────────────────────────────── */
+#prospect-beam { opacity: 0.55; }
+.prospect-scanning #prospect-beam { animation: beam-pulse 0.7s ease-in-out infinite; }
+
+/* ── PD turret rotation ──────────────────────────────────────────────── */
+@keyframes pd-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+#pd-barrels { transform-box: fill-box; transform-origin: center; }
+.pd-engaged #pd-barrels { animation: pd-rotate 1.4s linear infinite; }
+
+/* ── Shield arcs ─────────────────────────────────────────────────────── */
+.shield-arc { fill: none; stroke: var(--amber); stroke-linecap: round; transition: stroke 0.3s, opacity 0.4s; }
+.shield-arc.arc-sel { stroke: var(--green); }
+.shield-off .shield-arc { opacity: 0.15 !important; }
+
+/* ── Encoder strip ────────────────────────────────────────────────────── */
+
+.enc-strip {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  border-top: 2px solid var(--panel-border);
+  background: var(--panel);
+  min-height: clamp(50px, 10vh, 80px);
+}
+
+.enc-cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1vw, 12px);
+  padding: 0 clamp(12px, 2vw, 24px);
+  border-right: 1px solid var(--panel-border);
+  min-width: 0;
+  overflow: hidden;
+}
+.enc-cell:last-child { border-right: none; }
+
+.enc-label {
+  font-size: clamp(11px, 1.6vh, 16px);
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.enc-value {
+  font-size: clamp(18px, 3.8vh, 36px);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
 </head>
 <body>
-  <div>
-    <h1>HARDPOINT PANEL</h1>
-    <p>Placeholder — this screen's UI is out of scope for this session.</p>
+
+<!-- Error screen — shown when ?panel= is missing or out of range -->
+<div class="state-fill" id="error-screen" hidden>
+  <div class="state-fill-title">PANEL ERROR</div>
+  <div class="state-fill-sub" id="error-detail">Missing or invalid ?panel= parameter (expected 1–4)</div>
+</div>
+
+<!-- Main panel layout -->
+<div id="panel-layout" hidden>
+
+  <!-- Left SK strip: SK1–SK4 -->
+  <div class="sk-strip sk-strip--left">
+    <div class="sk-cell sk-cell--left" id="sk1"></div>
+    <div class="sk-cell sk-cell--left" id="sk2"></div>
+    <div class="sk-cell sk-cell--left" id="sk3"></div>
+    <div class="sk-cell sk-cell--left" id="sk4"></div>
   </div>
+
+  <!-- Center column -->
+  <div class="center-col">
+
+    <!-- Central area -->
+    <div class="central-area" id="central-area">
+
+      <!-- Connecting -->
+      <div class="central-msg connecting" id="msg-connecting">CONNECTING</div>
+
+      <!-- No module data yet (connected but no retained message) -->
+      <div class="central-msg dim-label" id="msg-awaiting" hidden>AWAITING MODULE DATA</div>
+
+      <!-- Empty slot -->
+      <div class="central-msg dim-label" id="msg-empty" hidden>NO MODULE INSTALLED</div>
+
+      <!-- Non-utility_tool category -->
+      <div class="central-msg dim-label" id="msg-not-impl" hidden>MODULE NOT IMPLEMENTED</div>
+
+      <!-- ═══════════════ Mining Laser ═══════════════ -->
+      <div class="module-view" id="view-laser" hidden>
+        <div class="armed-dot" id="laser-armed-dot"></div>
+        <div class="slot-label" id="laser-slot-label"></div>
+
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet"
+             xmlns="http://www.w3.org/2000/svg">
+
+          <!-- Hardware body — landscape coords rotated -90° into portrait.
+               translate(0,480) rotate(-90) maps (lx,ly) → (ly, 480-lx).
+               Lens tip at landscape (380,100) → portrait (100,100).
+               Top 100 portrait units are free for the beam. -->
+          <g transform="translate(0,480) rotate(-90)">
+            <rect x="8" y="72" width="38" height="56" rx="2"
+                  fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <rect x="2" y="81" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+            <rect x="2" y="95" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+            <rect x="2" y="109" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+            <text x="27" y="103" text-anchor="middle" fill="var(--amber)"
+                  font-size="7" font-family="monospace" letter-spacing="0.5" opacity="0.55">PWR</text>
+            <line x1="8"  y1="72" x2="8"  y2="60" stroke="var(--amber)" stroke-width="0.9" opacity="0.45"/>
+            <line x1="46" y1="72" x2="46" y2="60" stroke="var(--amber)" stroke-width="0.9" opacity="0.45"/>
+            <line x1="8"  y1="60" x2="46" y2="60" stroke="var(--amber)" stroke-width="0.9" opacity="0.45"/>
+            <rect x="46" y="94" width="22" height="12"
+                  fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+            <rect x="68" y="82" width="248" height="36" rx="3"
+                  fill="none" stroke="var(--amber)" stroke-width="2"/>
+            <rect x="72" y="85" width="240" height="7" rx="1"
+                  fill="none" stroke="var(--amber)" stroke-width="0.6" opacity="0.28"/>
+            <line x1="118" y1="82" x2="118" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+            <line x1="168" y1="82" x2="168" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+            <line x1="218" y1="82" x2="218" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+            <line x1="268" y1="82" x2="268" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+            <line x1="98"  y1="82" x2="93"  y2="67" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="112" y1="82" x2="107" y2="64" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="148" y1="82" x2="143" y2="67" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="162" y1="82" x2="157" y2="64" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="198" y1="82" x2="193" y2="67" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="212" y1="82" x2="207" y2="64" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="248" y1="82" x2="243" y2="67" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="262" y1="82" x2="257" y2="64" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="98"  y1="118" x2="93"  y2="133" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="112" y1="118" x2="107" y2="136" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="148" y1="118" x2="143" y2="133" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="162" y1="118" x2="157" y2="136" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="198" y1="118" x2="193" y2="133" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="212" y1="118" x2="207" y2="136" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="248" y1="118" x2="243" y2="133" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <line x1="262" y1="118" x2="257" y2="136" stroke="var(--amber)" stroke-width="1.1" opacity="0.55"/>
+            <path d="M316 82 Q348 88 380 100" fill="none" stroke="var(--amber)" stroke-width="2"/>
+            <path d="M316 118 Q348 112 380 100" fill="none" stroke="var(--amber)" stroke-width="2"/>
+            <ellipse cx="338" cy="100" rx="3" ry="16"
+                     fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.6"/>
+            <ellipse cx="360" cy="100" rx="2" ry="9"
+                     fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.6"/>
+            <circle cx="380" cy="100" r="3.5" fill="var(--amber)" opacity="0.75"/>
+          </g>
+
+          <!-- Beam — portrait coords. Lens tip is at portrait (100,100).
+               Fires upward (decreasing y) through the top of the frame. -->
+          <g id="laser-beam">
+            <line x1="100" y1="100" x2="100" y2="0"
+                  stroke="var(--amber)" stroke-width="22" opacity="0.07"/>
+            <line x1="100" y1="100" x2="100" y2="0"
+                  stroke="var(--amber)" stroke-width="2.5"/>
+            <line x1="100" y1="100" x2="93"  y2="0"
+                  stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+            <line x1="100" y1="100" x2="107" y2="0"
+                  stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+          </g>
+        </svg>
+
+        <!-- Status overlays -->
+        <div class="status-active" id="laser-active">SAFE</div>
+        <div class="status-readout" id="laser-readout"></div>
+      </div>
+
+      <!-- ═══════════════ Cutting/Welding Torch ═══════════════ -->
+      <div class="module-view" id="view-torch" hidden>
+        <div class="armed-dot" id="torch-armed-dot"></div>
+        <div class="slot-label" id="torch-slot-label"></div>
+
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet"
+             xmlns="http://www.w3.org/2000/svg">
+
+          <!-- Hardware body — rotated -90° into portrait.
+               Nozzle exit at landscape (284,100) → portrait (100,196). -->
+          <g transform="translate(0,480) rotate(-90)">
+            <rect x="8" y="72" width="38" height="56" rx="2"
+                  fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <rect x="2" y="81" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+            <rect x="2" y="95" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+            <rect x="2" y="109" width="6" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+            <text x="27" y="103" text-anchor="middle" fill="var(--amber)"
+                  font-size="7" font-family="monospace" letter-spacing="0.5" opacity="0.55">PWR</text>
+            <rect x="46" y="92" width="18" height="16"
+                  fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+            <rect x="64" y="74" width="160" height="52" rx="4"
+                  fill="none" stroke="var(--amber)" stroke-width="2"/>
+            <line x1="104" y1="74" x2="104" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+            <line x1="144" y1="74" x2="144" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+            <line x1="184" y1="74" x2="184" y2="126" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+            <rect x="80"  y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="106" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="132" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="158" y="76" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="80"  y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="106" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="132" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <rect x="158" y="119" width="14" height="5" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+            <path d="M224 80 L268 85 L280 91 L284 100 L280 109 L268 115 L224 120"
+                  fill="none" stroke="var(--amber)" stroke-width="2"/>
+            <ellipse cx="252" cy="100" rx="3" ry="17"
+                     fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.55"/>
+            <ellipse cx="284" cy="100" rx="2" ry="10"
+                     fill="none" stroke="var(--amber)" stroke-width="1.5" opacity="0.8"/>
+          </g>
+
+          <!-- Arc group — portrait coords, from nozzle exit at (100,193) upward.
+               CUT/WELD selection via .torch-cut / .torch-weld class on the view div. -->
+          <g id="torch-arc">
+            <!-- CUT arc: jagged red plasma, point-mapped from landscape coords -->
+            <g class="torch-arc-cut">
+              <path d="M100,193 L88,178 L103,164 L87,150 L98,136 L92,122 L100,108"
+                    fill="none" stroke="var(--red)" stroke-width="3" opacity="0.9"/>
+              <path d="M100,193 L88,178 L103,164 L87,150 L98,136 L92,122 L100,108"
+                    fill="none" stroke="var(--red)" stroke-width="10" opacity="0.16"/>
+              <line x1="96"  y1="164" x2="78"  y2="156" stroke="#ff8888" stroke-width="1.4" opacity="0.7"/>
+              <line x1="90"  y1="150" x2="74"  y2="140" stroke="#ff8888" stroke-width="1.4" opacity="0.7"/>
+              <line x1="100" y1="178" x2="118" y2="186" stroke="#ff8888" stroke-width="1.4" opacity="0.6"/>
+              <line x1="93"  y1="136" x2="110" y2="128" stroke="#ff8888" stroke-width="1.4" opacity="0.6"/>
+            </g>
+            <!-- WELD arc: smooth amber sine-wave, firing upward -->
+            <g class="torch-arc-weld">
+              <path d="M100,193 Q78,168 100,143 Q122,118 100,93"
+                    fill="none" stroke="var(--amber)" stroke-width="3.5" opacity="0.9"/>
+              <path d="M100,193 Q78,168 100,143 Q122,118 100,93"
+                    fill="none" stroke="var(--amber)" stroke-width="12" opacity="0.15"/>
+              <!-- Weld pool glow at arc tip -->
+              <ellipse cx="100" cy="90" rx="8" ry="20" fill="var(--amber)" opacity="0.08"/>
+            </g>
+          </g>
+        </svg>
+
+        <!-- Status overlays -->
+        <div class="status-active" id="torch-active">SAFE</div>
+        <div class="status-mode weld" id="torch-mode">WELD MODE</div>
+        <div class="status-readout" id="torch-readout"></div>
+      </div>
+
+      <!-- ═══════════════ Grapple/Winch Rig ═══════════════ -->
+      <div class="module-view" id="view-grapple" hidden>
+        <div class="armed-dot" id="grapple-armed-dot"></div>
+        <div class="slot-label" id="grapple-slot-label"></div>
+
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet"
+             xmlns="http://www.w3.org/2000/svg">
+
+          <!-- Hardware body — rotated -90° into portrait.
+               Muzzle exit at landscape (306,100) → portrait (100,174). -->
+          <g transform="translate(0,480) rotate(-90)">
+            <ellipse cx="38" cy="100" rx="30" ry="30"
+                     fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+            <ellipse cx="38" cy="100" rx="18" ry="18"
+                     fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+            <line x1="38" y1="70"  x2="38" y2="82"  stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+            <line x1="38" y1="118" x2="38" y2="130" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+            <line x1="8"  y1="100" x2="20" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+            <line x1="56" y1="100" x2="68" y2="100" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+            <line x1="17" y1="79"  x2="25" y2="87"  stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+            <line x1="59" y1="79"  x2="51" y2="87"  stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+            <line x1="17" y1="121" x2="25" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+            <line x1="59" y1="121" x2="51" y2="113" stroke="var(--amber)" stroke-width="1" opacity="0.38"/>
+            <circle cx="38" cy="100" r="5.5" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <circle cx="38" cy="100" r="2.5" fill="var(--amber)" opacity="0.65"/>
+            <rect x="68" y="82" width="160" height="36" rx="3"
+                  fill="none" stroke="var(--amber)" stroke-width="2"/>
+            <line x1="108" y1="82" x2="108" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+            <line x1="148" y1="82" x2="148" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+            <line x1="188" y1="82" x2="188" y2="118" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+            <rect x="96" y="82" width="44" height="9" rx="2"
+                  fill="var(--bg)" stroke="var(--amber)" stroke-width="0.9" opacity="0.7"/>
+            <rect x="228" y="90" width="70" height="20" rx="2"
+                  fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+            <line x1="250" y1="90" x2="250" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+            <line x1="270" y1="90" x2="270" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+            <line x1="290" y1="90" x2="290" y2="110" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+            <rect x="298" y="87" width="8" height="26" rx="1"
+                  fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+          </g>
+
+          <!-- Cable — portrait coords, fires upward from muzzle at (100,174).
+               y2 updated by JS; hook group translated vertically by JS. -->
+          <g id="grapple-cable">
+            <line id="grapple-cable-line" x1="100" y1="174" x2="100" y2="174"
+                  stroke="var(--amber)" stroke-width="1.6" opacity="0.82"
+                  stroke-dasharray="5 3"/>
+            <g id="grapple-hook">
+              <line x1="100" y1="174" x2="112" y2="174"
+                    stroke="var(--amber)" stroke-width="1.6"/>
+              <path d="M112,174 L112,188 Q112,198 102,198 Q92,198 92,188 L92,181"
+                    fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+              <path d="M92,181 L85,188"
+                    fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+            </g>
+          </g>
+        </svg>
+
+        <!-- Status overlays -->
+        <div class="status-active" id="grapple-attached">FREE</div>
+        <div class="status-deploy" id="grapple-deploy">RETRACTED</div>
+        <div class="status-readout" id="grapple-readout"></div>
+      </div>
+
+      <!-- ═══════════════ Standard Pod ═══════════════ -->
+      <div class="module-view" id="view-standard-pod" hidden>
+        <div class="armed-dot" id="standard-pod-armed-dot"></div>
+        <div class="slot-label" id="standard-pod-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting bracket -->
+          <rect x="82" y="428" width="36" height="24" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="72" y1="428" x2="128" y2="428" stroke="var(--amber)" stroke-width="1" opacity="0.4"/>
+          <!-- Main container body -->
+          <rect x="22" y="78" width="156" height="344" rx="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Corner reinforcements -->
+          <rect x="20" y="76" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="168" y="76" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="20" y="412" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="168" y="412" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Structural ribs (horizontal) -->
+          <line x1="22" y1="163" x2="178" y2="163" stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+          <line x1="22" y1="248" x2="178" y2="248" stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+          <line x1="22" y1="333" x2="178" y2="333" stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+          <!-- Status light strip on left face -->
+          <rect x="22" y="196" width="8" height="36" rx="2" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="26" cy="214" r="3.5" fill="var(--amber)" opacity="0.65"/>
+          <!-- Forklift channels at base -->
+          <rect x="42" y="390" width="40" height="24" rx="1" fill="var(--bg)" stroke="var(--amber)" stroke-width="1"/>
+          <rect x="118" y="390" width="40" height="24" rx="1" fill="var(--bg)" stroke="var(--amber)" stroke-width="1"/>
+          <!-- Panel detail top face -->
+          <rect x="60" y="78" width="80" height="8" rx="1" fill="none" stroke="var(--amber)" stroke-width="0.8" opacity="0.45"/>
+        </svg>
+        <div class="status-large" id="standard-pod-fill">—</div>
+        <div class="fill-bar-track"><div class="fill-bar-inner" id="standard-pod-bar" style="width:0%"></div></div>
+        <div class="status-sub-label" id="standard-pod-contents"></div>
+      </div>
+
+      <!-- ═══════════════ Reefer Pod ═══════════════ -->
+      <div class="module-view" id="view-reefer-pod" hidden>
+        <div class="armed-dot" id="reefer-pod-armed-dot"></div>
+        <div class="slot-label" id="reefer-pod-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting bracket -->
+          <rect x="82" y="428" width="36" height="24" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="72" y1="428" x2="128" y2="428" stroke="var(--amber)" stroke-width="1" opacity="0.4"/>
+          <!-- Main container body -->
+          <rect x="34" y="78" width="132" height="344" rx="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Corner reinforcements -->
+          <rect x="32" y="76" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="156" y="76" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="32" y="412" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="156" y="412" width="12" height="12" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Structural ribs -->
+          <line x1="34" y1="163" x2="166" y2="163" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <line x1="34" y1="248" x2="166" y2="248" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <line x1="34" y1="333" x2="166" y2="333" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <!-- Cooling fins LEFT -->
+          <line x1="18" y1="120" x2="34" y2="120" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="148" x2="34" y2="148" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="176" x2="34" y2="176" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="204" x2="34" y2="204" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="232" x2="34" y2="232" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="260" x2="34" y2="260" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="288" x2="34" y2="288" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="316" x2="34" y2="316" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="344" x2="34" y2="344" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="18" y1="372" x2="34" y2="372" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <!-- Cooling fins RIGHT -->
+          <line x1="166" y1="120" x2="182" y2="120" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="148" x2="182" y2="148" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="176" x2="182" y2="176" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="204" x2="182" y2="204" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="232" x2="182" y2="232" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="260" x2="182" y2="260" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="288" x2="182" y2="288" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="316" x2="182" y2="316" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="344" x2="182" y2="344" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <line x1="166" y1="372" x2="182" y2="372" stroke="var(--amber)" stroke-width="1.4" opacity="0.7"/>
+          <!-- Temperature gauge on front face -->
+          <rect x="88" y="350" width="24" height="60" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <circle cx="100" cy="406" r="7" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="100" y1="350" x2="100" y2="360" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+          <line x1="95"  y1="366" x2="100" y2="366" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+          <line x1="95"  y1="380" x2="100" y2="380" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+          <line x1="95"  y1="394" x2="100" y2="394" stroke="var(--amber)" stroke-width="0.8" opacity="0.5"/>
+        </svg>
+        <div class="status-large" id="reefer-pod-fill">—</div>
+        <div class="fill-bar-track"><div class="fill-bar-inner" id="reefer-pod-bar" style="width:0%"></div></div>
+        <div class="status-sub-label" id="reefer-pod-contents"></div>
+        <div class="status-temp" id="reefer-pod-temp"></div>
+      </div>
+
+      <!-- ═══════════════ Ore Hopper ═══════════════ -->
+      <div class="module-view" id="view-ore-hopper" hidden>
+        <div class="armed-dot" id="ore-hopper-armed-dot"></div>
+        <div class="slot-label" id="ore-hopper-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Trapezoidal hopper outline: top 20–180 @ y=80; bottom 72–128 @ y=380 -->
+          <polygon points="20,80 180,80 128,380 72,380" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Fill level (updated by JS) -->
+          <polygon id="hopper-fill" points="72,380 128,380 128,380 72,380" fill="var(--amber)" opacity="0.38"/>
+          <!-- Structural gussets left -->
+          <line x1="20"  y1="80"  x2="72"  y2="380" stroke="var(--amber)" stroke-width="0.6" opacity="0"/>
+          <line x1="50"  y1="80"  x2="83"  y2="230" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <line x1="100" y1="80"  x2="100" y2="140" stroke="var(--amber)" stroke-width="0.8" opacity="0.28"/>
+          <!-- Structural gussets right -->
+          <line x1="150" y1="80"  x2="117" y2="230" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <!-- Top rim detail -->
+          <rect x="20" y="70" width="160" height="10" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Discharge gate at bottom -->
+          <rect x="72" y="380" width="56" height="16" rx="1" fill="var(--bg)" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="88"  y1="380" x2="88"  y2="396" stroke="var(--amber)" stroke-width="0.9" opacity="0.5"/>
+          <line x1="112" y1="380" x2="112" y2="396" stroke="var(--amber)" stroke-width="0.9" opacity="0.5"/>
+          <!-- Mounting bracket -->
+          <rect x="82" y="396" width="36" height="24" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+          <!-- Side mounting points -->
+          <rect x="2"   y="96" width="18" height="30" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="180" y="96" width="18" height="30" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+        </svg>
+        <div class="status-large" id="ore-hopper-fill">—</div>
+        <div class="fill-bar-track"><div class="fill-bar-inner" id="ore-hopper-bar" style="width:0%"></div></div>
+        <div class="status-sub-label" id="ore-hopper-contents"></div>
+      </div>
+
+      <!-- ═══════════════ Long-range Scanner Array ═══════════════ -->
+      <div class="module-view" id="view-scanner" hidden>
+        <div class="armed-dot" id="scanner-armed-dot"></div>
+        <div class="slot-label" id="scanner-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting / body block at bottom -->
+          <rect x="70" y="370" width="60" height="50" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+          <line x1="70" y1="390" x2="130" y2="390" stroke="var(--amber)" stroke-width="0.8" opacity="0.35"/>
+          <rect x="82" y="420" width="36" height="20" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Mounting arm -->
+          <line x1="100" y1="370" x2="100" y2="310" stroke="var(--amber)" stroke-width="2.4"/>
+          <line x1="86"  y1="340" x2="114" y2="340" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+          <!-- Dish rim – parabolic arc facing upward (top of screen) -->
+          <path d="M 30 310 Q 100 180 170 310" fill="none" stroke="var(--amber)" stroke-width="2.4"/>
+          <!-- Dish ribs -->
+          <line x1="100" y1="220" x2="100" y2="310" stroke="var(--amber)" stroke-width="0.9" opacity="0.4"/>
+          <line x1="66"  y1="268" x2="80"  y2="310" stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+          <line x1="134" y1="268" x2="120" y2="310" stroke="var(--amber)" stroke-width="0.9" opacity="0.35"/>
+          <!-- Feed horn at focal point (~y=245) -->
+          <rect x="94" y="236" width="12" height="18" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="100" y1="236" x2="100" y2="220" stroke="var(--amber)" stroke-width="1.2" opacity="0.7"/>
+          <circle cx="100" cy="232" r="3" fill="var(--amber)" opacity="0.7"/>
+          <!-- Dish edge struts -->
+          <line x1="30"  y1="310" x2="46"  y2="310" stroke="var(--amber)" stroke-width="1.4"/>
+          <line x1="154" y1="310" x2="170" y2="310" stroke="var(--amber)" stroke-width="1.4"/>
+          <!-- Beam cone (Beam+Active mode, controlled by class) -->
+          <g id="scanner-beam-cone">
+            <polygon points="100,232 68,80 132,80" fill="var(--amber)" opacity="0.08"/>
+            <line x1="100" y1="232" x2="68"  y2="80" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+            <line x1="100" y1="232" x2="132" y2="80" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+            <line x1="100" y1="232" x2="100" y2="80" stroke="var(--amber)" stroke-width="1.8" opacity="0.7"/>
+          </g>
+          <!-- Pulse rings (Pulse+Active mode) -->
+          <g id="scanner-pulse-rings">
+            <circle class="scanner-pulse-ring" cx="100" cy="232" r="8"/>
+            <circle class="scanner-pulse-ring" cx="100" cy="232" r="8"/>
+            <circle class="scanner-pulse-ring" cx="100" cy="232" r="8"/>
+          </g>
+        </svg>
+        <div class="status-pill-row row-top" id="scanner-pills">
+          <span class="status-pill" id="scanner-pill-mode">PASSIVE</span>
+          <span class="status-pill pill-dim" id="scanner-pill-type">PULSE</span>
+        </div>
+        <div class="status-readout" id="scanner-readout"></div>
+      </div>
+
+      <!-- ═══════════════ Prospecting Suite ═══════════════ -->
+      <div class="module-view" id="view-prospecting" hidden>
+        <div class="armed-dot" id="prospecting-armed-dot"></div>
+        <div class="slot-label" id="prospecting-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting block -->
+          <rect x="70" y="380" width="60" height="50" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+          <rect x="82" y="430" width="36" height="20" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Outer Y-axis ring (horizontal oval) -->
+          <ellipse cx="100" cy="280" rx="70" ry="24" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+          <!-- Inner X-axis ring (vertical oval) -->
+          <ellipse cx="100" cy="280" rx="22" ry="60" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+          <!-- Gimbal arm connecting to mount -->
+          <line x1="100" y1="340" x2="100" y2="380" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Y-axis rotation indicator -->
+          <line x1="30"  y1="280" x2="14"  y2="280" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+          <line x1="170" y1="280" x2="186" y2="280" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+          <circle cx="14"  cy="280" r="4" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <circle cx="186" cy="280" r="4" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Sensor head (center of gimbal) -->
+          <circle cx="100" cy="280" r="12" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <circle cx="100" cy="280" r="5"  fill="var(--amber)" opacity="0.65"/>
+          <!-- Scanning beam firing upward -->
+          <line id="prospect-beam" x1="100" y1="268" x2="100" y2="80"
+                stroke="var(--amber)" stroke-width="2.5"/>
+          <line x1="100" y1="268" x2="88"  y2="80"
+                stroke="var(--amber)" stroke-width="0.9" opacity="0.3"/>
+          <line x1="100" y1="268" x2="112" y2="80"
+                stroke="var(--amber)" stroke-width="0.9" opacity="0.3"/>
+        </svg>
+        <div class="status-pill-row row-top">
+          <span class="status-pill pill-amber" id="prospecting-ore-label">—</span>
+        </div>
+        <div class="status-scan" id="prospecting-scan-state">READY</div>
+      </div>
+
+      <!-- ═══════════════ Stealth/ECM Package ═══════════════ -->
+      <div class="module-view" id="view-stealth" hidden>
+        <div class="armed-dot" id="stealth-armed-dot"></div>
+        <div class="slot-label" id="stealth-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting bracket -->
+          <rect x="74" y="420" width="52" height="32" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <!-- Signal processor box (rear) -->
+          <rect x="54" y="360" width="92" height="54" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+          <line x1="54" y1="382" x2="146" y2="382" stroke="var(--amber)" stroke-width="0.8" opacity="0.35"/>
+          <rect x="66" y="366" width="20" height="10" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <rect x="114" y="366" width="20" height="10" rx="1" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <!-- Conformal array panel (front face) -->
+          <rect x="22" y="78" width="156" height="276" rx="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Grid of radiating elements (6 cols × 9 rows) -->
+          <!-- Row 1 -->
+          <circle class="stealth-el" cx="44"  cy="104" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="104" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="104" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="104" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="104" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="104" r="5" fill="var(--amber)"/>
+          <!-- Row 2 -->
+          <circle class="stealth-el" cx="44"  cy="130" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="130" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="130" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="130" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="130" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="130" r="5" fill="var(--amber)"/>
+          <!-- Row 3 -->
+          <circle class="stealth-el" cx="44"  cy="156" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="156" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="156" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="156" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="156" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="156" r="5" fill="var(--amber)"/>
+          <!-- Row 4 -->
+          <circle class="stealth-el" cx="44"  cy="182" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="182" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="182" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="182" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="182" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="182" r="5" fill="var(--amber)"/>
+          <!-- Row 5 -->
+          <circle class="stealth-el" cx="44"  cy="208" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="208" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="208" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="208" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="208" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="208" r="5" fill="var(--amber)"/>
+          <!-- Row 6 -->
+          <circle class="stealth-el" cx="44"  cy="234" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="234" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="234" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="234" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="234" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="234" r="5" fill="var(--amber)"/>
+          <!-- Row 7 -->
+          <circle class="stealth-el" cx="44"  cy="260" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="260" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="260" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="260" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="260" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="260" r="5" fill="var(--amber)"/>
+          <!-- Row 8 -->
+          <circle class="stealth-el" cx="44"  cy="286" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="286" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="286" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="286" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="286" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="286" r="5" fill="var(--amber)"/>
+          <!-- Row 9 -->
+          <circle class="stealth-el" cx="44"  cy="330" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="68"  cy="330" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="92"  cy="330" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="108" cy="330" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="132" cy="330" r="5" fill="var(--amber)"/>
+          <circle class="stealth-el" cx="156" cy="330" r="5" fill="var(--amber)"/>
+        </svg>
+        <div class="status-pill-row row-top">
+          <span class="status-pill pill-dim" id="stealth-state-pill">INACTIVE</span>
+        </div>
+        <div class="status-readout" id="stealth-readout"></div>
+      </div>
+
+      <!-- ═══════════════ Deflector Shield Generator ═══════════════ -->
+      <div class="module-view" id="view-shield" hidden>
+        <div class="armed-dot" id="shield-armed-dot"></div>
+        <div class="slot-label" id="shield-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ship hull (top-down schematic), centred at (100, 260) -->
+          <!-- Hull body -->
+          <path d="M100,148 L136,176 L142,260 L136,340 L100,358 L64,340 L58,260 L64,176 Z"
+                fill="none" stroke="var(--amber)" stroke-width="1.6" opacity="0.6"/>
+          <!-- Hull centre line -->
+          <line x1="100" y1="148" x2="100" y2="358" stroke="var(--amber)" stroke-width="0.7" opacity="0.28"/>
+          <!-- Bridge blister -->
+          <ellipse cx="100" cy="196" rx="14" ry="10" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+          <!-- Engine pods -->
+          <ellipse cx="78"  cy="340" rx="8" ry="14" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+          <ellipse cx="122" cy="340" rx="8" ry="14" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.5"/>
+
+          <!-- FORE arc — above ship (top of screen) -->
+          <path id="arc-fore" class="shield-arc"
+                d="M 28 180 A 82 82 0 0 1 172 180"
+                stroke-width="5"/>
+          <!-- AFT arc — below ship -->
+          <path id="arc-aft" class="shield-arc"
+                d="M 28 340 A 82 82 0 0 0 172 340"
+                stroke-width="5"/>
+          <!-- PORT arc — left -->
+          <path id="arc-port" class="shield-arc"
+                d="M 34 178 A 82 82 0 0 0 34 342"
+                stroke-width="5"/>
+          <!-- STBD arc — right -->
+          <path id="arc-stbd" class="shield-arc"
+                d="M 166 178 A 82 82 0 0 1 166 342"
+                stroke-width="5"/>
+        </svg>
+        <div class="status-pill-row row-top">
+          <span class="status-pill pill-dim" id="shield-state-pill">INACTIVE</span>
+          <span class="status-pill pill-amber" id="shield-facing-pill">FORE</span>
+        </div>
+        <div class="status-readout" id="shield-readout"></div>
+      </div>
+
+      <!-- ═══════════════ Point-Defense Turret Pod ═══════════════ -->
+      <div class="module-view" id="view-pd-turret" hidden>
+        <div class="armed-dot" id="pd-turret-armed-dot"></div>
+        <div class="slot-label" id="pd-turret-slot-label"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting base -->
+          <rect x="60" y="380" width="80" height="50" rx="4" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+          <line x1="60" y1="406" x2="140" y2="406" stroke="var(--amber)" stroke-width="0.8" opacity="0.4"/>
+          <rect x="78" y="430" width="44" height="18" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Dome body -->
+          <path d="M 42 380 Q 42 280 100 264 Q 158 280 158 380" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Dome detail ring -->
+          <path d="M 56 340 Q 56 296 100 282 Q 144 296 144 340" fill="none" stroke="var(--amber)" stroke-width="1" opacity="0.45"/>
+          <!-- Barrel assembly (rotates when engaged) — origin at dome top (100, 264) -->
+          <g id="pd-barrels">
+            <!-- Centre hub -->
+            <circle cx="100" cy="264" r="9" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+            <circle cx="100" cy="264" r="3.5" fill="var(--amber)" opacity="0.7"/>
+            <!-- 4 barrels at 90° intervals -->
+            <rect x="97" y="198" width="6" height="62" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <rect x="97" y="264" width="6" height="62" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <rect x="34"  y="261" width="62" height="6" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <rect x="104" y="261" width="62" height="6" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <!-- Muzzle caps -->
+            <circle cx="100" cy="200" r="4"  fill="var(--amber)" opacity="0.5"/>
+            <circle cx="100" cy="324" r="4"  fill="var(--amber)" opacity="0.5"/>
+            <circle cx="36"  cy="264" r="4"  fill="var(--amber)" opacity="0.5"/>
+            <circle cx="164" cy="264" r="4"  fill="var(--amber)" opacity="0.5"/>
+          </g>
+        </svg>
+        <div class="status-pill-row row-top">
+          <span class="status-pill pill-dim" id="pd-turret-state-pill">STANDBY</span>
+        </div>
+      </div>
+
+      <!-- ═══════════════ Decoy/Flare Dispenser ═══════════════ -->
+      <div class="module-view" id="view-decoy" hidden>
+        <div class="armed-dot" id="decoy-armed-dot"></div>
+        <div class="slot-label" id="decoy-slot-label"></div>
+        <div class="lock-warning-overlay" id="decoy-lock-overlay"></div>
+        <svg class="module-svg" viewBox="0 0 200 480" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Mounting bracket -->
+          <rect x="74" y="428" width="52" height="30" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <!-- Pod body -->
+          <rect x="28" y="130" width="144" height="292" rx="4" fill="none" stroke="var(--amber)" stroke-width="2"/>
+          <!-- Structural ribs -->
+          <line x1="28" y1="220" x2="172" y2="220" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <line x1="28" y1="310" x2="172" y2="310" stroke="var(--amber)" stroke-width="0.8" opacity="0.3"/>
+          <!-- 8 ejector tubes in 2×4 grid -->
+          <!-- Col 1 -->
+          <rect x="44"  y="148" width="36" height="58" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <circle cx="62" cy="168" r="10" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="62" cy="168" r="4"  fill="var(--bg)" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="44"  y="238" width="36" height="58" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <circle cx="62" cy="258" r="10" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="62" cy="258" r="4"  fill="var(--bg)" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="44"  y="328" width="36" height="58" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <circle cx="62" cy="348" r="10" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="62" cy="348" r="4"  fill="var(--bg)" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Col 2 -->
+          <rect x="120" y="148" width="36" height="58" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <circle cx="138" cy="168" r="10" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="138" cy="168" r="4"  fill="var(--bg)" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="120" y="238" width="36" height="58" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <circle cx="138" cy="258" r="10" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="138" cy="258" r="4"  fill="var(--bg)" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="120" y="328" width="36" height="58" rx="3" fill="none" stroke="var(--amber)" stroke-width="1.4"/>
+          <circle cx="138" cy="348" r="10" fill="none" stroke="var(--amber)" stroke-width="1"/>
+          <circle cx="138" cy="348" r="4"  fill="var(--bg)" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- Top panel (2 tubes side by side) -->
+          <rect x="44"  y="398" width="36" height="24" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <rect x="120" y="398" width="36" height="24" rx="2" fill="none" stroke="var(--amber)" stroke-width="1.2"/>
+          <!-- LOCK WARNING label -->
+          <text x="100" y="118" text-anchor="middle" fill="var(--red)"
+                font-size="11" font-family="monospace" letter-spacing="3"
+                opacity="0.55" id="decoy-lock-text">LOCK</text>
+        </svg>
+        <div class="status-large" id="decoy-count">—</div>
+        <div class="status-sub-label" style="top:38%">DECOYS REMAINING</div>
+      </div>
+
+      <!-- Loadout mode overlay -->
+      <div class="loadout-overlay" id="loadout-overlay" hidden>
+        <div class="loadout-overlay-main">LOADOUT MODE</div>
+        <div class="loadout-overlay-sub">STAND BY</div>
+      </div>
+
+    </div><!-- /.central-area -->
+
+    <!-- Encoder strip -->
+    <div class="enc-strip">
+      <div class="enc-cell">
+        <span class="enc-label" id="enc-a-label"></span>
+        <span class="enc-value" id="enc-a-value"></span>
+      </div>
+      <div class="enc-cell">
+        <span class="enc-label" id="enc-b-label"></span>
+        <span class="enc-value" id="enc-b-value"></span>
+      </div>
+    </div>
+
+  </div><!-- /.center-col -->
+
+  <!-- Right SK strip: SK5–SK8 -->
+  <div class="sk-strip sk-strip--right">
+    <div class="sk-cell sk-cell--right" id="sk5"></div>
+    <div class="sk-cell sk-cell--right" id="sk6"></div>
+    <div class="sk-cell sk-cell--right" id="sk7"></div>
+    <div class="sk-cell sk-cell--right" id="sk8"></div>
+  </div>
+
+</div><!-- /#panel-layout -->
+
+<script src="/vendor/mqtt.min.js"></script>
+<script>
+(function () {
+
+  // ── URL param ────────────────────────────────────────────────────────────
+
+  const params = new URLSearchParams(location.search);
+  const slotRaw = params.get('panel');
+  const slot = parseInt(slotRaw, 10);
+
+  if (!slotRaw || isNaN(slot) || slot < 1 || slot > 4) {
+    document.getElementById('error-screen').hidden = false;
+    document.getElementById('error-detail').textContent =
+      slotRaw
+        ? `?panel=${slotRaw} is invalid — expected 1, 2, 3, or 4`
+        : 'Missing required URL parameter: ?panel=1 through ?panel=4';
+    return;
+  }
+
+  document.getElementById('panel-layout').hidden = false;
+  document.title = `Cold Orbit — Hardpoint ${slot}`;
+
+  // ── Module name → internal type key ──────────────────────────────────────
+
+  const MODULE_MAP = {
+    'mining laser':               'laser',
+    'cutting/welding torch':      'torch',
+    'grapple/winch rig':          'grapple',
+    'standard pod':               'standard-pod',
+    'reefer pod':                 'reefer-pod',
+    'ore hopper':                 'ore-hopper',
+    'long-range scanner array':   'scanner',
+    'prospecting suite':          'prospecting',
+    'stealth/ecm package':        'stealth',
+    'deflector shield generator': 'shield',
+    'point-defense turret pod':   'pd-turret',
+    'decoy/flare dispenser':      'decoy',
+  };
+
+  const ORE_TYPES = [
+    'MOCK: Iron Oxide',
+    'MOCK: Silicate',
+    'MOCK: Rare Earth',
+    'MOCK: Carbonite',
+    'MOCK: Crystalline',
+  ];
+
+  // Returns SK label array for current module + state.
+  // Each entry: '' = blank, string = active, {label, dim} = dimmed, {label, sel} = selected.
+  function getSKLabels(key) {
+    switch (key) {
+      case 'laser':   return ['◄','▲','','▼','ON','OFF','','►'];
+      case 'torch':   return ['◄','▲','WELD','▼','ON','OFF','CUT','►'];
+      case 'grapple': return ['◄','▲','','▼','LAUNCH','RELEASE','','►'];
+      case 'standard-pod':
+      case 'reefer-pod':
+      case 'ore-hopper':
+        return ['','','','','','','',''];
+      case 'scanner': {
+        const modeLabel = state.scannerActive ? 'ACTIVE' : 'PASSIVE';
+        const typeLabel = state.scannerBeam   ? 'BEAM'   : 'PULSE';
+        return ['','','','',
+          modeLabel,
+          {label: typeLabel, dim: !state.scannerActive},
+          '',''];
+      }
+      case 'prospecting':
+        return ['','','','','SCAN','ORE◀','ORE▶',''];
+      case 'stealth':
+        return ['','','','', state.stealthOn ? 'ON' : 'OFF', '','',''];
+      case 'shield': {
+        const f = state.shieldFacing;
+        const onLabel = state.shieldOn ? 'ON' : 'OFF';
+        return [
+          {label:'FORE', sel: f==='fore'},
+          {label:'AFT',  sel: f==='aft'},
+          {label:'PORT', sel: f==='port'},
+          {label:'STBD', sel: f==='starboard'},
+          onLabel,'','',''];
+      }
+      case 'pd-turret': return ['','','','', state.pdEngaged ? 'DISENGAGE' : 'ENGAGE', '','',''];
+      case 'decoy':     return ['','','','','LAUNCH','','',''];
+      default:          return ['','','','','','','',''];
+    }
+  }
+
+  // ── State ─────────────────────────────────────────────────────────────────
+
+  const state = {
+    connected:       false,
+    category:        null,
+    moduleKey:       null,
+    armed:           false,
+    active:          false,
+    loadoutMode:     false,
+    // Utility tool
+    torchMode:       'weld',
+    grappleAttached: null,
+    // Cargo
+    fillPct:         null,
+    contents:        null,
+    tempC:           null,
+    tempMin:         null,
+    tempMax:         null,
+    // Scanner
+    scannerActive:   true,
+    scannerBeam:     false,
+    // Prospecting
+    oreFilterIndex:  0,
+    // Stealth
+    stealthOn:       false,
+    // Shield
+    shieldOn:        false,
+    shieldFacing:    'fore',
+    shieldStrengths: { fore: 0, aft: 0, port: 0, starboard: 0 },
+    // PD Turret
+    pdEngaged:       false,
+    // Decoy
+    missileWarning:  false,
+    decoyCount:      null,
+    // Encoders
+    encA:            null,
+    encB:            null,
+  };
+
+  // ── DOM helpers ───────────────────────────────────────────────────────────
+
+  const $ = id => document.getElementById(id);
+
+  const ALL_VIEW_IDS = [
+    'msg-connecting', 'msg-awaiting', 'msg-empty', 'msg-not-impl',
+    'view-laser', 'view-torch', 'view-grapple',
+    'view-standard-pod', 'view-reefer-pod', 'view-ore-hopper',
+    'view-scanner', 'view-prospecting', 'view-stealth',
+    'view-shield', 'view-pd-turret', 'view-decoy',
+  ];
+
+  function showOnly(...ids) {
+    ALL_VIEW_IDS.forEach(id => {
+      const el = $(id);
+      if (el) el.hidden = !ids.includes(id);
+    });
+  }
+
+  function setSK(labels) {
+    ['sk1','sk2','sk3','sk4','sk5','sk6','sk7','sk8'].forEach((id, i) => {
+      const cell = $(id);
+      const entry = labels[i];
+      if (!entry) {
+        cell.textContent = '';
+        cell.classList.remove('sk-dim', 'sk-sel');
+      } else if (typeof entry === 'string') {
+        cell.textContent = entry;
+        cell.classList.remove('sk-dim', 'sk-sel');
+      } else {
+        cell.textContent = entry.label || '';
+        cell.classList.toggle('sk-dim', !!entry.dim);
+        cell.classList.toggle('sk-sel', !!entry.sel);
+      }
+    });
+  }
+
+  function clearSK() {
+    setSK(['','','','','','','','']);
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  function renderModule() {
+    const { connected, category, moduleKey, armed } = state;
+
+    if (!connected) {
+      showOnly('msg-connecting');
+      clearSK();
+      return;
+    }
+
+    if (category === null) {
+      showOnly('msg-awaiting');
+      clearSK();
+      return;
+    }
+
+    if (category === 'empty') {
+      showOnly('msg-empty');
+      clearSK();
+      return;
+    }
+
+    if (!moduleKey) {
+      showOnly('msg-not-impl');
+      clearSK();
+      return;
+    }
+
+    // Show module view
+    const viewId = `view-${moduleKey}`;
+    showOnly(viewId);
+    setSK(getSKLabels(moduleKey));
+
+    // Slot label and armed dot
+    const slotLabelEl = $(`${moduleKey}-slot-label`);
+    if (slotLabelEl) slotLabelEl.textContent = `HP-${slot}`;
+    const dot = $(`${moduleKey}-armed-dot`);
+    if (dot) dot.className = 'armed-dot' + (armed ? ' armed' : '');
+
+    // Active class, mode, and per-module live indicators
+    applyActiveVisuals();
+  }
+
+  function renderTelemetry() {
+    const { moduleKey, encA, encB } = state;
+
+    // Encoder A
+    if (encA) {
+      $('enc-a-label').textContent = encA.label;
+      $('enc-a-value').textContent = encA.value + ' ' + encA.unit;
+    } else {
+      $('enc-a-label').textContent = '';
+      $('enc-a-value').textContent = '';
+    }
+
+    // Encoder B
+    if (encB) {
+      $('enc-b-label').textContent = encB.label;
+      $('enc-b-value').textContent = encB.value + ' ' + encB.unit;
+    } else {
+      $('enc-b-label').textContent = '';
+      $('enc-b-value').textContent = '';
+    }
+
+    // Dim enc-b label when bearing unavailable (scanner: must be Beam+Active)
+    const encBLabelEl = $('enc-b-label');
+    if (moduleKey === 'scanner') {
+      const avail = state.scannerActive && state.scannerBeam;
+      if (encBLabelEl) encBLabelEl.style.color = avail ? '' : 'var(--dim)';
+    } else {
+      if (encBLabelEl) encBLabelEl.style.color = '';
+    }
+
+    // Central readout for modules that have one
+    const READOUT_IDS = ['laser','torch','grapple','scanner','stealth'];
+    READOUT_IDS.forEach(mk => { const el = $(`${mk}-readout`); if (el) el.textContent = ''; });
+
+    if (encA && READOUT_IDS.includes(moduleKey)) {
+      const el = $(`${moduleKey}-readout`);
+      if (el) el.textContent = encA.value + (encA.unit ? ' ' + encA.unit : '');
+    }
+
+    // Shield readout: strength of selected facing
+    if (moduleKey === 'shield') {
+      const el = $('shield-readout');
+      if (el) {
+        const str = state.shieldStrengths[state.shieldFacing] || 0;
+        el.textContent = Math.round(str * 100) + '%';
+      }
+    }
+  }
+
+  function renderLoadout() {
+    const overlay = $('loadout-overlay');
+    overlay.hidden = !state.loadoutMode;
+    const layout = $('panel-layout');
+    if (state.loadoutMode) {
+      layout.classList.add('loadout-active');
+    } else {
+      layout.classList.remove('loadout-active');
+    }
+  }
+
+  // ── Active-state visuals (called after any state change that affects display) ──
+
+  function applyActiveVisuals() {
+    const { moduleKey, active, armed, torchMode, grappleAttached } = state;
+    if (!moduleKey) return;
+
+    const view = $(`view-${moduleKey}`);
+    if (!view) return;
+
+    // Apply active + mode classes
+    let cls = 'module-view';
+    if (active) cls += ' module-active';
+    if (moduleKey === 'torch') cls += ' torch-' + torchMode;
+    view.className = cls;
+
+    if (moduleKey === 'laser') {
+      const lbl = $('laser-active');
+      if (lbl) { lbl.textContent = active ? 'ACTIVE' : 'SAFE'; lbl.className = 'status-active' + (active ? ' is-active' : ''); }
+    }
+    if (moduleKey === 'torch') {
+      const lbl = $('torch-active');
+      if (lbl) { lbl.textContent = active ? 'ACTIVE' : 'SAFE'; lbl.className = 'status-active' + (active ? ' is-active' : ''); }
+      const mode = $('torch-mode');
+      if (mode) { mode.textContent = torchMode === 'cut' ? 'CUT MODE' : 'WELD MODE'; mode.className = 'status-mode ' + torchMode; }
+    }
+    if (moduleKey === 'grapple') {
+      const attachedEl = $('grapple-attached');
+      if (attachedEl) {
+        attachedEl.textContent = grappleAttached === true ? 'ATTACHED' : 'FREE';
+        attachedEl.className = 'status-active' + (grappleAttached === true ? ' is-active' : '');
+      }
+      const cableVisible = active || grappleAttached !== null;
+      const depEl = $('grapple-deploy');
+      if (depEl) { depEl.textContent = cableVisible ? 'DEPLOYED' : 'RETRACTED'; depEl.className = 'status-deploy' + (cableVisible ? ' deployed' : ''); }
+      updateGrappleCable(cableVisible);
+    }
+
+    // ── New module visuals ────────────────────────────────────────────────
+
+    // Cargo: fill bar + contents label (standard pod / reefer pod / ore hopper)
+    if (['standard-pod','reefer-pod','ore-hopper'].includes(moduleKey)) {
+      const key = moduleKey;
+      const fillEl  = $(`${key}-fill`);
+      const barEl   = $(`${key}-bar`);
+      const contEl  = $(`${key}-contents`);
+      const pct     = state.fillPct != null ? state.fillPct : null;
+      if (fillEl) fillEl.textContent = pct != null ? pct + '%' : '—';
+      if (barEl)  barEl.style.width  = pct != null ? pct + '%' : '0%';
+      if (contEl) contEl.textContent = state.contents || '';
+
+      // Reefer: temperature indicator
+      if (key === 'reefer-pod') {
+        const tempEl = $('reefer-pod-temp');
+        if (tempEl) {
+          if (state.tempC != null) {
+            tempEl.textContent = state.tempC + '°C';
+            let cls = 'status-temp temp-ok';
+            if (state.tempMin != null && state.tempMax != null) {
+              if (state.tempC < state.tempMin || state.tempC > state.tempMax) cls = 'status-temp temp-crit';
+              else if (state.tempC < state.tempMin + 5 || state.tempC > state.tempMax - 5) cls = 'status-temp temp-warn';
+            }
+            tempEl.className = cls;
+          } else {
+            tempEl.textContent = '';
+          }
+        }
+      }
+
+      // Ore hopper: fill polygon
+      if (key === 'ore-hopper') {
+        const poly = $('hopper-fill');
+        if (poly) {
+          const p = pct != null ? Math.min(100, Math.max(0, pct)) / 100 : 0;
+          // Hopper: top at y=80 x=20..180; bottom at y=380 x=72..128
+          const fillTopY = 380 - p * 300;
+          const slope = 50 / 300; // (70-20)/300 per side
+          const lx = 20 + (fillTopY - 80) * slope;
+          const rx = 180 - (fillTopY - 80) * slope;
+          poly.setAttribute('points', `${lx.toFixed(1)},${fillTopY.toFixed(1)} ${rx.toFixed(1)},${fillTopY.toFixed(1)} 128,380 72,380`);
+        }
+      }
+    }
+
+    // Scanner: dish mode classes
+    if (moduleKey === 'scanner') {
+      const beam   = state.scannerActive && state.scannerBeam;
+      const pulse  = state.scannerActive && !state.scannerBeam;
+      let cls = 'module-view';
+      if (beam)  cls += ' scanner-beam-active';
+      if (pulse) cls += ' scanner-pulse-mode';
+      view.className = cls;
+
+      const modePill = $('scanner-pill-mode');
+      const typePill = $('scanner-pill-type');
+      if (modePill) {
+        modePill.textContent = state.scannerActive ? 'ACTIVE' : 'PASSIVE';
+        modePill.className   = 'status-pill ' + (state.scannerActive ? 'pill-active' : 'pill-dim');
+      }
+      if (typePill) {
+        typePill.textContent = state.scannerBeam ? 'BEAM' : 'PULSE';
+        typePill.className   = 'status-pill ' + (state.scannerActive ? 'pill-amber' : 'pill-dim');
+      }
+    }
+
+    // Prospecting: ore filter label + scan state
+    if (moduleKey === 'prospecting') {
+      const oreEl  = $('prospecting-ore-label');
+      const scanEl = $('prospecting-scan-state');
+      if (oreEl) {
+        const idx = Math.max(0, Math.min(state.oreFilterIndex, ORE_TYPES.length - 1));
+        oreEl.textContent = ORE_TYPES[idx];
+      }
+      if (scanEl) {
+        scanEl.textContent = active ? 'SCANNING' : 'READY';
+        scanEl.className   = 'status-scan' + (active ? ' scanning' : '');
+      }
+      const prospView = $('view-prospecting');
+      if (prospView) prospView.classList.toggle('prospect-scanning', !!active);
+    }
+
+    // Stealth: shimmer class + pill
+    if (moduleKey === 'stealth') {
+      const stealthView = $('view-stealth');
+      if (stealthView) stealthView.classList.toggle('stealth-on', !!state.stealthOn);
+      const pill = $('stealth-state-pill');
+      if (pill) {
+        pill.textContent = state.stealthOn ? 'ACTIVE' : 'INACTIVE';
+        pill.className   = 'status-pill ' + (state.stealthOn ? 'pill-active' : 'pill-dim');
+      }
+    }
+
+    // Shield: arc opacities + state pill + facing pill
+    if (moduleKey === 'shield') {
+      const shieldView = $('view-shield');
+      if (shieldView) shieldView.classList.toggle('shield-off', !state.shieldOn);
+
+      const facingMap = { fore: 'arc-fore', aft: 'arc-aft', port: 'arc-port', starboard: 'arc-stbd' };
+      Object.entries(facingMap).forEach(([facing, arcId]) => {
+        const arc = $(arcId);
+        if (!arc) return;
+        const str      = state.shieldStrengths[facing] || 0;
+        const selected = facing === state.shieldFacing;
+        arc.classList.toggle('arc-sel', selected);
+        arc.style.opacity     = state.shieldOn ? (0.2 + str * 0.8).toFixed(2) : '';
+        arc.style.strokeWidth = selected ? '6' : (2 + str * 3).toFixed(1);
+      });
+
+      const statePill  = $('shield-state-pill');
+      const facingPill = $('shield-facing-pill');
+      if (statePill) {
+        statePill.textContent = state.shieldOn ? 'ACTIVE' : 'INACTIVE';
+        statePill.className   = 'status-pill ' + (state.shieldOn ? 'pill-active' : 'pill-dim');
+      }
+      const FACING_LABELS = { fore:'FORE', aft:'AFT', port:'PORT', starboard:'STBD' };
+      if (facingPill) facingPill.textContent = FACING_LABELS[state.shieldFacing] || state.shieldFacing.toUpperCase();
+
+      // Re-render SK to update selected highlight
+      setSK(getSKLabels('shield'));
+    }
+
+    // PD Turret: engage class + pill
+    if (moduleKey === 'pd-turret') {
+      const pdView = $('view-pd-turret');
+      if (pdView) pdView.classList.toggle('pd-engaged', !!state.pdEngaged);
+      const pill = $('pd-turret-state-pill');
+      if (pill) {
+        pill.textContent = state.pdEngaged ? 'ENGAGED' : 'STANDBY';
+        pill.className   = 'status-pill ' + (state.pdEngaged ? 'pill-active' : 'pill-dim');
+      }
+    }
+
+    // Decoy: count + lock warning
+    if (moduleKey === 'decoy') {
+      const countEl = $('decoy-count');
+      if (countEl) countEl.textContent = state.decoyCount != null ? state.decoyCount : '—';
+      const decoyView = $('view-decoy');
+      if (decoyView) decoyView.classList.toggle('missile-lock', !!state.missileWarning);
+    }
+  }
+
+  // ── Grapple cable visual update ───────────────────────────────────────────
+
+  function updateGrappleCable(visible) {
+    // Portrait: cable fires upward from muzzle at (100,174); y decreases with extension.
+    const MUZZLE_Y   = 174;
+    const MAX_EXTENT = 160; // portrait units of cable travel
+    const view = $('view-grapple');
+    if (view) view.classList.toggle('cable-visible', !!visible);
+    if (!visible) return;
+
+    const pct = state.encA ? Math.min(100, Math.max(0, state.encA.value)) : 0;
+    const extent = Math.max(4, (pct / 100) * MAX_EXTENT);
+    const y2 = MUZZLE_Y - extent; // cable tip: upward = decreasing y
+
+    const line = $('grapple-cable-line');
+    const hook = $('grapple-hook');
+    if (line) line.setAttribute('y2', y2);
+    if (hook) hook.setAttribute('transform', `translate(0, ${y2 - MUZZLE_Y})`);
+  }
+
+  // ── MQTT message handlers ─────────────────────────────────────────────────
+
+  function handleModule(msg) {
+    state.category  = msg.category || null;
+    state.armed     = !!msg.armed;
+    state.moduleKey = MODULE_MAP[(msg.name || '').toLowerCase()] || null;
+
+    // Utility tool fields
+    state.torchMode       = msg.mode     || 'weld';
+    state.grappleAttached = msg.attached !== undefined ? msg.attached : null;
+
+    // Cargo fields
+    state.fillPct    = msg.fill_pct  != null ? msg.fill_pct  : null;
+    state.contents   = msg.contents  || null;
+    state.tempC      = msg.temp_c    != null ? msg.temp_c    : null;
+    state.tempMin    = msg.temp_min  != null ? msg.temp_min  : null;
+    state.tempMax    = msg.temp_max  != null ? msg.temp_max  : null;
+
+    // Scanner
+    if (msg.scanner_mode_active !== undefined) state.scannerActive = !!msg.scanner_mode_active;
+    if (msg.scanner_mode_beam   !== undefined) state.scannerBeam   = !!msg.scanner_mode_beam;
+
+    // Stealth
+    if (msg.stealth_on !== undefined) state.stealthOn = !!msg.stealth_on;
+
+    // Shield
+    if (msg.shield_on               !== undefined) state.shieldOn      = !!msg.shield_on;
+    if (msg.shield_selected_facing  !== undefined) state.shieldFacing   = msg.shield_selected_facing;
+    if (msg.shield_strengths        !== undefined) state.shieldStrengths = msg.shield_strengths;
+
+    // PD Turret
+    if (msg.pd_engaged !== undefined) state.pdEngaged = !!msg.pd_engaged;
+
+    // Decoy
+    if (msg.missile_lock_warning !== undefined) state.missileWarning = !!msg.missile_lock_warning;
+    if (msg.decoy_count          != null)       state.decoyCount     = msg.decoy_count;
+
+    state.active = false;
+    state.encA   = null;
+    state.encB   = null;
+
+    renderModule();
+    renderTelemetry();
+  }
+
+  function handleTelemetry(msg) {
+    state.active = !!msg.active;
+    if (msg.mode             != null) state.torchMode     = msg.mode;
+    if (msg.ore_filter_index != null) state.oreFilterIndex = msg.ore_filter_index;
+
+    const entry = { label: msg.label, value: msg.value, unit: msg.unit };
+
+    // Slot assignment: keep two distinct labels; same label updates its slot
+    if (!state.encA || state.encA.label === msg.label) {
+      state.encA = entry;
+    } else if (!state.encB || state.encB.label === msg.label) {
+      state.encB = entry;
+    } else {
+      // Third distinct label — evict A (oldest seen first)
+      state.encA = entry;
+      state.encB = null;
+    }
+
+    renderTelemetry();
+    applyActiveVisuals();
+  }
+
+  function handleLoadout(payloadStr) {
+    try {
+      state.loadoutMode = JSON.parse(payloadStr.trim()) === true;
+    } catch (_) {
+      state.loadoutMode = payloadStr.trim() === 'true';
+    }
+    renderLoadout();
+  }
+
+  // ── MQTT connection ───────────────────────────────────────────────────────
+
+  const brokerUrl = `ws://${location.hostname}:9001`;
+  const clientId  = `hardpoint-${slot}-` + Math.random().toString(16).slice(2, 10);
+
+  const client = mqtt.connect(brokerUrl, {
+    clientId,
+    reconnectPeriod: 2000,
+    connectTimeout:  10000,
+  });
+
+  const topicModule   = `coldorbit/output/hardpoints/${slot}/module`;
+  const topicTelemetry = `coldorbit/output/hardpoints/${slot}/telemetry`;
+  const topicLoadout  = 'coldorbit/output/ship/loadout-unlocked';
+
+  client.on('connect', function () {
+    state.connected = true;
+    client.subscribe([topicModule, topicTelemetry, topicLoadout], { qos: 1 });
+    renderModule();
+  });
+
+  client.on('reconnect', function () {
+    state.connected = false;
+    renderModule();
+  });
+
+  client.on('close', function () {
+    state.connected = false;
+    renderModule();
+  });
+
+  client.on('message', function (topic, payload) {
+    let msg;
+    try { msg = JSON.parse(payload.toString()); } catch (_) { msg = payload.toString(); }
+
+    if (topic === topicModule)    { handleModule(msg);            return; }
+    if (topic === topicTelemetry) { handleTelemetry(msg);         return; }
+    if (topic === topicLoadout)   { handleLoadout(payload.toString()); }
+  });
+
+})();
+</script>
 </body>
 </html>

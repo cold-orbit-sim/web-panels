@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Decoy/Flare Dispenser — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; --red:#ff4d4d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:16px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:220px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:8px; }
+.count-large { font-size:48px; font-weight:700; color:var(--text); letter-spacing:.06em; }
+.sub { color:var(--dim); font-size:10px; letter-spacing:.16em; margin-top:2px; }
+@keyframes lock-flash { 0%,100%{opacity:0} 50%{opacity:.38} }
+.lock-overlay { position:absolute; inset:0; background:var(--red); animation: lock-flash 0.55s ease-in-out infinite; pointer-events:none; }
+.card-rel { position:relative; overflow:hidden; }
+</style></head><body>
+<h1>HARDPOINT MODULE — DECOY/FLARE DISPENSER</h1>
+<p style="color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:20px;">SK5 = LAUNCH. Count displayed large. missile_lock_warning → red flash overlay (MOCK — sim-core won't publish yet).</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">NORMAL — 12 DECOYS</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <!-- Pod body -->
+    <rect x="20" y="30" width="160" height="130" rx="3" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <line x1="20" y1="74" x2="180" y2="74" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <line x1="20" y1="118" x2="180" y2="118" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <!-- 2×3 tube grid -->
+    <rect x="36" y="40" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="55" cy="50" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="55" cy="50" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="126" y="40" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="145" cy="50" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="145" cy="50" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="36" y="83" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="55" cy="93" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="55" cy="93" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="126" y="83" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="145" cy="93" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="145" cy="93" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="36" y="126" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="55" cy="136" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="55" cy="136" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="126" y="126" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="145" cy="136" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="145" cy="136" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <!-- Count -->
+    <text x="100" y="180" text-anchor="middle" fill="#d8e6e8" font-size="20" font-family="monospace" font-weight="700">12</text>
+    <text x="100" y="194" text-anchor="middle" fill="#5c7378" font-size="8" font-family="monospace" letter-spacing="2">DECOYS REMAINING</text>
+    <circle cx="26" cy="36" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="count-large">12</div>
+  <div class="sub">DECOYS REMAINING</div>
+</div>
+
+<div class="card card-rel">
+  <div class="label">MISSILE LOCK WARNING</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="20" y="30" width="160" height="130" rx="3" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <line x1="20" y1="74" x2="180" y2="74" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <line x1="20" y1="118" x2="180" y2="118" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <rect x="36" y="40" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="55" cy="50" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="55" cy="50" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="126" y="40" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="145" cy="50" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="145" cy="50" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="36" y="83" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="55" cy="93" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="55" cy="93" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="126" y="83" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3"/>
+    <circle cx="145" cy="93" r="8" fill="none" stroke="#ffb000" stroke-width="0.9"/>
+    <circle cx="145" cy="93" r="3" fill="#06090b" stroke="#ffb000" stroke-width="1.1"/>
+    <rect x="36" y="126" width="38" height="26" rx="2" fill="none" stroke="#ff4d4d" stroke-width="1.3"/>
+    <rect x="126" y="126" width="38" height="26" rx="2" fill="none" stroke="#ff4d4d" stroke-width="1.3"/>
+    <text x="100" y="195" text-anchor="middle" fill="#ff4d4d" font-size="9" font-family="monospace" letter-spacing="3">LOCK</text>
+    <text x="100" y="180" text-anchor="middle" fill="#d8e6e8" font-size="20" font-family="monospace" font-weight="700">6</text>
+    <circle cx="26" cy="36" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="lock-overlay"></div>
+  <div class="count-large" style="color:var(--red)">6</div>
+  <div class="sub" style="color:var(--red)">⚠ MISSILE LOCK ⚠</div>
+</div>
+
+<div class="card">
+  <div class="label">EMPTY</div>
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <rect x="20" y="30" width="160" height="130" rx="3" fill="none" stroke="#ffb000" stroke-width="2"/>
+    <line x1="20" y1="74" x2="180" y2="74" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <line x1="20" y1="118" x2="180" y2="118" stroke="#ffb000" stroke-width="0.8" opacity="0.3"/>
+    <!-- All tubes empty (rings only, no inner dots) -->
+    <rect x="36" y="40" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3" opacity="0.3"/>
+    <rect x="126" y="40" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3" opacity="0.3"/>
+    <rect x="36" y="83" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3" opacity="0.3"/>
+    <rect x="126" y="83" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3" opacity="0.3"/>
+    <rect x="36" y="126" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3" opacity="0.3"/>
+    <rect x="126" y="126" width="38" height="26" rx="2" fill="none" stroke="#ffb000" stroke-width="1.3" opacity="0.3"/>
+    <text x="100" y="180" text-anchor="middle" fill="#5c7378" font-size="20" font-family="monospace" font-weight="700">0</text>
+    <text x="100" y="194" text-anchor="middle" fill="#5c7378" font-size="8" font-family="monospace" letter-spacing="2">EMPTY — RELOAD</text>
+    <circle cx="26" cy="36" r="4" fill="#3ddc71"/>
+  </svg>
+  <div class="count-large" style="color:var(--dim)">0</div>
+  <div class="sub">EMPTY</div>
+</div>
+
+</div>
+<p style="color:var(--dim);font-size:10px;letter-spacing:.12em;margin-top:20px;">FLAG FOR REVIEW: Tube count/layout (currently 6 in 2×3 — adjust if count range differs), lock warning flash rate.<br>
+MOCK NOTE: missile_lock_warning published by mock script only — sim-core doesn't publish this field yet.</p>
+</body></html>

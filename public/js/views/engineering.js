@@ -62,6 +62,9 @@ const MOCK_DAMAGE_EFFECTS = {
 // state[id] = { health, power_allocated, power_unit, power_max, disabled, repair_queue_position }
 const state = {};
 
+// Canonical queue from coldorbit/output/repair/queue — full array, authoritative.
+let queueState = [];
+
 // SVG <g data-system="..."> refs
 const svgRefs = {};
 
@@ -130,8 +133,13 @@ export function handleEngineeringState(systemId, data) {
   if (!(systemId in SYSTEMS)) return;
   state[systemId] = data;
   renderSystem(systemId);
-  renderQueue();
   if (activeDetail === systemId) renderDetail(systemId);
+}
+
+export function handleRepairQueue(data) {
+  queueState = Array.isArray(data) ? data : [];
+  renderQueue();
+  if (activeDetail) renderDetail(activeDetail);
 }
 
 // ── render helpers ───────────────────────────────────────────────────────────
@@ -173,23 +181,45 @@ function renderSystem(id) {
   el.classList.toggle("sys-disabled", !!(s && s.disabled));
 }
 
+function formatEta(seconds) {
+  if (seconds == null) return "—";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function healthColorFromHealth(health) {
+  if (health === 0) return "var(--red)";
+  if (health < 30) return "var(--red)";
+  if (health <= 70) return "var(--amber)";
+  return "var(--green)";
+}
+
+function statusBadgeHtml(status) {
+  if (status === "in_progress") return '<span class="eng-queue-badge eng-queue-badge--active">IN PROGRESS</span>';
+  if (status === "blocked")     return '<span class="eng-queue-badge eng-queue-badge--blocked">BLOCKED</span>';
+  return '<span class="eng-queue-badge eng-queue-badge--queued">QUEUED</span>';
+}
+
 function renderQueue() {
   if (!queueList) return;
 
-  const queued = Object.entries(state)
-    .filter(([, s]) => s && s.repair_queue_position != null)
-    .sort(([, a], [, b]) => a.repair_queue_position - b.repair_queue_position);
-
-  if (queued.length === 0) {
+  if (queueState.length === 0) {
     queueList.innerHTML = '<div class="eng-queue-nominal">ALL SYSTEMS<br>NOMINAL</div>';
     return;
   }
 
-  queueList.innerHTML = queued.map(([id, s]) => {
-    const color = healthColor(id);
+  queueList.innerHTML = queueState.map((entry, i) => {
+    const sys = SYSTEMS[entry.system];
+    const label = sys ? sys.label : entry.system.replace(/_/g, " ").toUpperCase();
+    const color = healthColorFromHealth(entry.health);
     return `<div class="eng-queue-item">
-      <span class="eng-queue-pos" style="color:${color}">${s.repair_queue_position}</span>
-      <span class="eng-queue-name" style="color:${color}">${SYSTEMS[id].label}</span>
+      <div class="eng-queue-main">
+        <span class="eng-queue-pos" style="color:${color}">${i + 1}</span>
+        <span class="eng-queue-name" style="color:${color}">${label}</span>
+        <span class="eng-queue-eta">${formatEta(entry.repair_eta_seconds)}</span>
+      </div>
+      <div class="eng-queue-sub">${statusBadgeHtml(entry.status)}</div>
     </div>`;
   }).join('<div class="eng-queue-divider"></div>');
 }
@@ -233,12 +263,12 @@ function renderDetail(id) {
       </div>`;
   }
 
-  const queuePos = s && s.repair_queue_position != null
-    ? `#${s.repair_queue_position}`
-    : "NOT IN QUEUE";
-  const repairEta = s && s.repair_queue_position != null
-    ? "MOCK: ~4 min 20 sec"
-    : "—";
+  const queueEntry = queueState.find((e) => e.system === id);
+  const queuePos = queueEntry ? `#${queueState.indexOf(queueEntry) + 1}` : "NOT IN QUEUE";
+  const repairEta = queueEntry ? formatEta(queueEntry.repair_eta_seconds) : "—";
+  const queueStatusHtml = queueEntry
+    ? `<div>${statusBadgeHtml(queueEntry.status)}</div>`
+    : "";
 
   const effects = MOCK_DAMAGE_EFFECTS[id] || [];
   const effectsHtml = effects.length
@@ -263,6 +293,7 @@ function renderDetail(id) {
       ${effectsHtml}
       <div class="eng-det-meta">
         <div>REPAIR QUEUE: <span style="color:${color}">${queuePos}</span></div>
+        ${queueStatusHtml}
         <div>ETA: <span style="color:var(--dim)">${repairEta}</span></div>
       </div>
     </div>`;

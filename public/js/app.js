@@ -1,11 +1,16 @@
 // Touchscreen shell: connects to the broker, subscribes to the mode-select
 // topic and the hardpoint state topics, and swaps the active view in place.
 // There is no page reload/navigation involved in a mode change — ever.
-import { BROKER_URL, MQTT_OPTIONS, TOPICS, MODES, HARDPOINT_TOPIC_RE, ENGINEERING_TOPIC_RE } from "./config.js";
+import { BROKER_URL, MQTT_OPTIONS, TOPICS, MODES, HARDPOINT_TOPIC_RE, ENGINEERING_TOPIC_RE, TURRET_TOPIC_RE, MISSILE_TOPIC_RE } from "./config.js";
 import { initHardpoints, handleHardpointModule, handleHardpointTelemetry } from "./views/hardpoints.js";
 import { initLoadout } from "./views/loadout.js";
-import { initEngineering, handleEngineeringState } from "./views/engineering.js";
+import { initEngineering, handleEngineeringState, handleRepairQueue } from "./views/engineering.js";
 import { initComms, handleCommsLog, handleCommsTargets } from "./views/comms.js";
+import { initAlerts, handleAlerts } from "./views/alerts.js";
+import { initPropulsion, handlePropulsionState } from "./views/propulsion.js";
+import { initFtl, handleFtlState } from "./views/ftl.js";
+import { initTurrets, handleTurretState, setTurretsLoadoutMode } from "./views/turrets.js";
+import { initMissiles, handleMissileState, setMissilesLoadoutMode } from "./views/missiles.js";
 
 const params = new URLSearchParams(location.search);
 const brokerUrl = params.get("broker") || BROKER_URL;
@@ -17,7 +22,12 @@ const viewEls    = document.querySelectorAll("[data-view]");
 
 const VIEW_TITLES = {
   engineering: "MASTER SYSTEMS DISPLAY",
-  comms: "COMMS — CONTACTS & LOG",
+  propulsion:  "PROPULSION",
+  ftl:         "FTL DRIVE",
+  turrets:     "TURRETS",
+  missiles:    "MISSILES",
+  comms:       "COMMS — CONTACTS & LOG",
+  hardpoints:  "HARDPOINTS",
 };
 
 // When true the loadout screen overrides all normal mode routing.
@@ -34,6 +44,8 @@ function setMode(mode) {
 
 function setLoadoutMode(unlocked) {
   loadoutUnlocked = unlocked;
+  setTurretsLoadoutMode(unlocked);
+  setMissilesLoadoutMode(unlocked);
   if (unlocked) {
     viewEls.forEach((el) => el.classList.remove("active"));
     document.getElementById("view-loadout").classList.add("active");
@@ -43,7 +55,24 @@ function setLoadoutMode(unlocked) {
   }
 }
 
+initAlerts(document.querySelector(".topbar"));
 initEngineering(document.getElementById("view-engineering"));
+initPropulsion(document.getElementById("view-propulsion"));
+initFtl(document.getElementById("view-ftl"));
+initTurrets(document.getElementById("view-turrets"), (turretId, payload) => {
+  client.publish(
+    `${TOPICS.turretAmmoBase}/${turretId}/ammo`,
+    JSON.stringify(payload),
+    { qos: 1, retain: true },
+  );
+});
+initMissiles(document.getElementById("view-missiles"), (tubeId, payload) => {
+  client.publish(
+    `${TOPICS.missileTypeBase}/${tubeId}/type`,
+    JSON.stringify(payload),
+    { qos: 1, retain: true },
+  );
+});
 initComms(document.getElementById("view-comms"));
 initHardpoints(document.getElementById("view-hardpoints"));
 initLoadout(document.getElementById("view-loadout"), (payload) => {
@@ -72,8 +101,14 @@ client.on("connect", () => {
       TOPICS.hardpointTelemetry,
       TOPICS.loadoutUnlocked,
       TOPICS.engineeringState,
+      TOPICS.repairQueue,
       TOPICS.commsLog,
       TOPICS.commsTargets,
+      TOPICS.alerts,
+      TOPICS.propulsionState,
+      TOPICS.ftlState,
+      TOPICS.turretState,
+      TOPICS.missileState,
     ],
     { qos: 1 },
   );
@@ -108,6 +143,27 @@ client.on("message", (topic, payloadBuf) => {
     return;
   }
 
+  if (topic === TOPICS.alerts) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleAlerts(data);
+    return;
+  }
+
+  if (topic === TOPICS.propulsionState) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handlePropulsionState(data);
+    return;
+  }
+
+  if (topic === TOPICS.ftlState) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleFtlState(data);
+    return;
+  }
+
   if (topic === TOPICS.commsLog) {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
@@ -119,6 +175,29 @@ client.on("message", (topic, payloadBuf) => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
     handleCommsTargets(data);
+    return;
+  }
+
+  const turretMatch = topic.match(TURRET_TOPIC_RE);
+  if (turretMatch) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleTurretState(turretMatch[1], data);
+    return;
+  }
+
+  const missileMatch = topic.match(MISSILE_TOPIC_RE);
+  if (missileMatch) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleMissileState(missileMatch[1], data);
+    return;
+  }
+
+  if (topic === TOPICS.repairQueue) {
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+    handleRepairQueue(data);
     return;
   }
 
