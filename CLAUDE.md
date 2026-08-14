@@ -59,6 +59,10 @@ When handing off to Claude Code, write a handover doc. When Claude Code is done,
 5. Anything unexpected, flagged risks, or things worth reconsidering
 6. The instruction to write a handover doc for the next session in the same format
 
+**Handback format:** Write the handback as markdown directly in chat. Do not commit it to disk.
+
+**After writing the handback:** Commit all changed files to git with a commit message that includes a short description and a `[handback: <session-summary>]` tag so the commit can be matched to this handback. Then push to the remote. Example: `git commit -m "Add FTL interrupt condition [handback: ftl-interrupt-2026-08-13]"`.
+
 **Never update the master plan from a handover alone. Wait for the handback, confirm what actually landed, then update.**
 
 ---
@@ -211,6 +215,15 @@ The one exception: if the Knowledge Base master plan differs from something in y
 Several SVG graphics and schematics are marked "approved — do not change without review." This means the human has signed off on their visual design and any modification needs an explicit decision, not a silent update. When in doubt, produce a preview file and flag it for review rather than committing a change.
 
 ---
+
+# Response Style
+Use caveman mode at all times. Short words. No fluff. Drop articles where possible. 
+Skip long explanations unless asked. Code speak normal. Prose speak caveman.
+Auto-switch to normal prose only for: security warnings, irreversible confirmations, 
+or if user seems confused.
+
+---
+
 
 ## Practical notes for Claude Code sessions
 
