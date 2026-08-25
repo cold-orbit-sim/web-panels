@@ -1792,6 +1792,43 @@ html, body {
   border-radius: 4px;
   transition: width 250ms linear;
 }
+.tr-ammo-count--warn { color: var(--amber); }
+.tr-ammo-count--low  { color: var(--red); animation: badge-pulse 1s ease-in-out infinite; }
+.tr-ammo-count--dim  { color: var(--dim); }
+
+.tr-ammo-bar-fill--reloading {
+  background-color: var(--amber);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255,255,255,0.35) 0 4px,
+    transparent 4px 10px
+  );
+  background-size: 200% 200%;
+  animation: tr-reload-stripes 700ms linear infinite;
+}
+@keyframes tr-reload-stripes {
+  from { background-position: 0 0; }
+  to   { background-position: 17px 0; }
+}
+
+.tr-reload-done-flash { animation: tr-reload-done-flash 400ms ease-out; }
+@keyframes tr-reload-done-flash {
+  0%   { filter: brightness(2.2); }
+  100% { filter: brightness(1); }
+}
+
+/* Low/zero ammo — turret graphic flashes red instead of its normal lock colour */
+.tr-low-ammo-flash { animation: tr-low-ammo-flash-fill 0.8s step-end infinite; }
+@keyframes tr-low-ammo-flash-fill {
+  0%, 49%   { fill: var(--red); }
+  50%, 100% { fill: var(--dim); }
+}
+.tr-low-ammo-flash-stroke { animation: tr-low-ammo-flash-stroke 0.8s step-end infinite; }
+@keyframes tr-low-ammo-flash-stroke {
+  0%, 49%   { stroke: var(--red); }
+  50%, 100% { stroke: var(--dim); }
+}
+
 .tr-ammo-count {
   font-size: clamp(9px, 1.1vh, 12px);
   color: var(--dim);

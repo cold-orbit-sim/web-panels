@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Turrets — Ammo Count + Reload Stripes + Low-Ammo Flash — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; --red:#ff4d4d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:6px; }
+p.note { color:var(--dim); font-size:11px; letter-spacing:.1em; margin-bottom:20px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:220px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:14px; }
+.field-col { display:flex; flex-direction:column; gap:3px; }
+.lbl { color:var(--dim); font-size:11px; letter-spacing:.1em; }
+.ammo-bar-track { height:8px; background:#142024; border-radius:4px; overflow:hidden; }
+.ammo-bar-fill { height:100%; border-radius:4px; }
+.ammo-bar-fill--reloading {
+  background: repeating-linear-gradient(-45deg, var(--amber) 0 6px, #142024 6px 12px);
+  background-size: 200% 200%;
+  animation: reload-stripes 700ms linear infinite;
+}
+@keyframes reload-stripes { from { background-position: 0 0; } to { background-position: 17px 0; } }
+.ammo-count { font-size:11px; letter-spacing:.06em; text-align:right; }
+.ammo-count--warn { color:var(--amber); }
+.ammo-count--low  { color:var(--red); animation: badge-pulse 1s ease-in-out infinite; }
+.ammo-count--dim  { color:var(--dim); }
+@keyframes badge-pulse { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
+
+svg { width:100%; margin-bottom:8px; }
+.flash-fill { animation: low-ammo-fill 0.8s step-end infinite; }
+@keyframes low-ammo-fill { 0%,49% { fill:var(--red); } 50%,100% { fill:var(--dim); } }
+.flash-stroke { animation: low-ammo-stroke 0.8s step-end infinite; }
+@keyframes low-ammo-stroke { 0%,49% { stroke:var(--red); } 50%,100% { stroke:var(--dim); } }
+</style></head><body>
+<h1>TURRETS — AMMO COUNT + RELOAD STRIPES + LOW-AMMO FLASH</h1>
+<p class="note">Contract (assumed): ammo_remaining[] carries {type, count, max} — thresholds are % of that type's magazine (count/max), not an absolute round count, since different ammo types hold different amounts. Turret flashes red/dim at &le;10%; count text goes amber at &le;30%. Ammo bar goes diagonal-stripe amber (full width) while reloading.</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">NORMAL — 142 / 170 (84%)</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(140,140)">
+      <rect x="-21" y="-108" width="16" height="80" rx="4" fill="var(--green)"/>
+      <rect x="5" y="-108" width="16" height="80" rx="4" fill="var(--green)"/>
+      <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--green)" stroke-width="2.2"/>
+      <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--green)" stroke-width="1.6"/>
+    </g>
+  </svg>
+  <div class="field-col">
+    <span class="lbl">AMMO — Kinetic Slug</span>
+    <div class="ammo-bar-track"><div class="ammo-bar-fill" style="width:83.5%;background:var(--green)"></div></div>
+    <div class="ammo-count">142 / 170</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">WARN — 22 / 170 (13%, amber text)</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(140,140)">
+      <rect x="-21" y="-108" width="16" height="80" rx="4" fill="var(--green)"/>
+      <rect x="5" y="-108" width="16" height="80" rx="4" fill="var(--green)"/>
+      <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--green)" stroke-width="2.2"/>
+      <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--green)" stroke-width="1.6"/>
+    </g>
+  </svg>
+  <div class="field-col">
+    <span class="lbl">AMMO — Kinetic Slug</span>
+    <div class="ammo-bar-track"><div class="ammo-bar-fill" style="width:12.9%;background:var(--green)"></div></div>
+    <div class="ammo-count ammo-count--warn">22 / 170</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">LOW/ZERO — &le;10% — turret flashes red</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(140,140)">
+      <rect class="flash-fill" x="-21" y="-108" width="16" height="80" rx="4" fill="var(--red)"/>
+      <rect class="flash-fill" x="5" y="-108" width="16" height="80" rx="4" fill="var(--red)"/>
+      <rect class="flash-stroke" x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--red)" stroke-width="2.2"/>
+      <ellipse class="flash-stroke" cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--red)" stroke-width="1.6"/>
+    </g>
+  </svg>
+  <div class="field-col">
+    <span class="lbl">AMMO — Kinetic Slug</span>
+    <div class="ammo-bar-track"><div class="ammo-bar-fill" style="width:0%;background:var(--green)"></div></div>
+    <div class="ammo-count ammo-count--low">0 / 170</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">RELOADING — diagonal stripes</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(140,140)">
+      <rect x="-21" y="-108" width="16" height="80" rx="4" fill="var(--amber)"/>
+      <rect x="5" y="-108" width="16" height="80" rx="4" fill="var(--amber)"/>
+      <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--amber)" stroke-width="2.2"/>
+      <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--amber)" stroke-width="1.6"/>
+    </g>
+  </svg>
+  <div class="field-col">
+    <span class="lbl">AMMO — Kinetic Slug (RELOADING)</span>
+    <div class="ammo-bar-track"><div class="ammo-bar-fill ammo-bar-fill--reloading" style="width:100%"></div></div>
+    <div class="ammo-count ammo-count--dim">142 / 170</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">RELOADING FROM ZERO — full bar stripes</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(140,140)">
+      <rect x="-21" y="-108" width="16" height="80" rx="4" fill="var(--amber)"/>
+      <rect x="5" y="-108" width="16" height="80" rx="4" fill="var(--amber)"/>
+      <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--amber)" stroke-width="2.2"/>
+      <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--amber)" stroke-width="1.6"/>
+    </g>
+  </svg>
+  <div class="field-col">
+    <span class="lbl">AMMO — Kinetic Slug (RELOADING)</span>
+    <div class="ammo-bar-track"><div class="ammo-bar-fill ammo-bar-fill--reloading" style="width:100%"></div></div>
+    <div class="ammo-count ammo-count--dim">0 / 170</div>
+  </div>
+</div>
+
+</div>
+</body></html>

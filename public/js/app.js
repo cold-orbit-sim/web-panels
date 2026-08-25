@@ -45,6 +45,7 @@ function setMode(mode) {
 }
 
 function setLoadoutMode(unlocked) {
+  const wasUnlocked = loadoutUnlocked;
   loadoutUnlocked = unlocked;
   setTurretsLoadoutMode(unlocked);
   setMissilesLoadoutMode(unlocked);
@@ -53,7 +54,11 @@ function setLoadoutMode(unlocked) {
     document.getElementById("view-loadout").classList.add("active");
   } else {
     document.getElementById("view-loadout").classList.remove("active");
-    setMode(forcedMode || "hardpoints");
+    // Only snap to the default view on an actual close (true -> false).
+    // loadout-unlocked is retained, so a reconnect/refresh redelivers the
+    // last "false" even when nothing changed — that must not clobber
+    // whatever the mode topic already restored.
+    if (wasUnlocked) setMode(forcedMode || "hardpoints");
   }
 }
 

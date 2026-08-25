@@ -33,8 +33,8 @@ $PUB -r -t "$BASE/dorsal/state" -m '{
   "target_range_m":840,
   "ammo_loaded":"Kinetic Slug",
   "ammo_remaining":[
-    {"type":"Kinetic Slug","count":142},
-    {"type":"EMP Round","count":28}
+    {"type":"Kinetic Slug","count":142,"max":170},
+    {"type":"EMP Round","count":28,"max":40}
   ],
   "heat":0.34
 }'
@@ -53,9 +53,9 @@ $PUB -r -t "$BASE/ventral/state" -m '{
   "target_range_m":null,
   "ammo_loaded":"EMP Round",
   "ammo_remaining":[
-    {"type":"Kinetic Slug","count":142},
-    {"type":"EMP Round","count":28},
-    {"type":"Tracer","count":60}
+    {"type":"Kinetic Slug","count":142,"max":170},
+    {"type":"EMP Round","count":28,"max":40},
+    {"type":"Tracer","count":60,"max":100}
   ],
   "heat":0.05
 }'
@@ -90,6 +90,16 @@ V_STEP=0   # start at none
 D_ELEV=6.2
 V_ELEV="null"
 
+# Reload cycling: dorsal reloads every 40 ticks, takes 20 ticks (~2s @ 10Hz)
+D_RELOADING=false
+D_RELOAD_TICK=0
+RELOAD_DURATION=20
+
+# Dorsal Kinetic Slug depletes while armed+locked, refills on reload completion
+# — drives the low-ammo flash and the reload-stripe demo end to end.
+D_KINETIC_MAX=170
+D_KINETIC_COUNT=142
+
 TICK=0
 
 publish_dorsal() {
@@ -109,6 +119,13 @@ publish_dorsal() {
   local elev_json
   [ "$D_ELEV" = "null" ] && elev_json="null" || elev_json=$(printf "%.1f" "$D_ELEV")
 
+  local reload_progress
+  if [ "$D_RELOADING" = "true" ]; then
+    reload_progress=$(echo "scale=3; $D_RELOAD_TICK / $RELOAD_DURATION" | bc)
+  else
+    reload_progress="0.0"
+  fi
+
   $PUB -r -t "$BASE/dorsal/state" -m "{
     \"turret\":\"dorsal\",
     \"armed\":$D_ARMED,
@@ -123,10 +140,12 @@ publish_dorsal() {
     \"target_range_m\":$range_json,
     \"ammo_loaded\":\"Kinetic Slug\",
     \"ammo_remaining\":[
-      {\"type\":\"Kinetic Slug\",\"count\":142},
-      {\"type\":\"EMP Round\",\"count\":28}
+      {\"type\":\"Kinetic Slug\",\"count\":$D_KINETIC_COUNT,\"max\":$D_KINETIC_MAX},
+      {\"type\":\"EMP Round\",\"count\":28,\"max\":40}
     ],
-    \"heat\":$(printf "%.2f" "$D_HEAT")
+    \"heat\":$(printf "%.2f" "$D_HEAT"),
+    \"reloading\":$D_RELOADING,
+    \"reload_progress\":$reload_progress
   }"
 }
 
@@ -158,11 +177,13 @@ publish_ventral() {
     \"target_range_m\":$range_json,
     \"ammo_loaded\":\"EMP Round\",
     \"ammo_remaining\":[
-      {\"type\":\"Kinetic Slug\",\"count\":142},
-      {\"type\":\"EMP Round\",\"count\":28},
-      {\"type\":\"Tracer\",\"count\":60}
+      {\"type\":\"Kinetic Slug\",\"count\":142,\"max\":170},
+      {\"type\":\"EMP Round\",\"count\":28,\"max\":40},
+      {\"type\":\"Tracer\",\"count\":60,\"max\":100}
     ],
-    \"heat\":$(printf "%.2f" "$V_HEAT")
+    \"heat\":$(printf "%.2f" "$V_HEAT"),
+    \"reloading\":false,
+    \"reload_progress\":0.0
   }"
 }
 
@@ -227,6 +248,25 @@ while true; do
   # Every 40 ticks: toggle ventral arm state (only when locked)
   if (( TICK % 40 == 0 )) && [ "$V_LOCK" = "locked" ]; then
     [ "$V_ARMED" = "true" ] && V_ARMED=false || V_ARMED=true
+  fi
+
+  # Dorsal reload cycle: trigger every 40 ticks, runs for RELOAD_DURATION ticks
+  if [ "$D_RELOADING" = "true" ]; then
+    D_RELOAD_TICK=$((D_RELOAD_TICK + 1))
+    if (( D_RELOAD_TICK >= RELOAD_DURATION )); then
+      D_RELOADING=false
+      D_RELOAD_TICK=0
+      D_KINETIC_COUNT=$D_KINETIC_MAX
+    fi
+  elif (( TICK % 40 == 0 )); then
+    D_RELOADING=true
+    D_RELOAD_TICK=0
+  fi
+
+  # Kinetic Slug depletes while armed+locked (drives the low-ammo flash demo)
+  if [ "$D_RELOADING" = "false" ] && [ "$D_ARMED" = "true" ] && [ "$D_LOCK" = "locked" ]; then
+    D_KINETIC_COUNT=$((D_KINETIC_COUNT - 3))
+    (( D_KINETIC_COUNT < 0 )) && D_KINETIC_COUNT=0
   fi
 
   # Every 60 ticks: change dorsal target (when not none)
