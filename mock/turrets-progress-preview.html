@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Turrets — Lock Progress Arc + Elevation Readout — Preview</title>
+<style>
+:root { --bg:#06090b; --panel:#0d1418; --border:#1f2e33; --text:#d8e6e8; --dim:#5c7378; --amber:#ffb000; --green:#3ddc71; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:ui-monospace,monospace; padding:24px; }
+h1 { color:var(--amber); letter-spacing:.22em; font-size:16px; margin-bottom:6px; }
+p.note { color:var(--dim); font-size:11px; letter-spacing:.1em; margin-bottom:20px; }
+.row { display:flex; gap:24px; flex-wrap:wrap; }
+.card { background:var(--panel); border:1px solid var(--border); padding:16px; width:260px; }
+.label { color:var(--dim); font-size:11px; letter-spacing:.14em; margin-bottom:10px; }
+.field-row { display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:12px; }
+.lbl { color:var(--dim); letter-spacing:.1em; }
+.val { font-weight:600; }
+.val--amber { color:var(--amber); }
+.val--green { color:var(--green); }
+.val--dim { color:var(--dim); font-weight:400; }
+</style></head><body>
+<h1>TURRETS — LOCK PROGRESS ARC + ELEVATION READOUT</h1>
+<p class="note">Batch 24 fields: lock_progress (0-1) drives the amber/green ring around the lock indicator. elevation_deg is a numeric readout (SVG can't show it geometrically).</p>
+<div class="row">
+
+<div class="card">
+  <div class="label">DORSAL — ACQUIRING (lock_progress 0.6)</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <g transform="translate(140,140)">
+      <circle r="48" fill="none" stroke="var(--dim)" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.28"/>
+      <!-- progress arc: r=64, C=402.1, offset = C*(1-0.6) -->
+      <circle r="64" fill="none" stroke="var(--amber)" stroke-width="4" stroke-linecap="round"
+              transform="rotate(-90)" stroke-dasharray="402.1" stroke-dashoffset="160.8"/>
+      <g>
+        <rect x="-21" y="-148" width="16" height="120" rx="4" fill="var(--amber)"/>
+        <rect x="5" y="-148" width="16" height="120" rx="4" fill="var(--amber)"/>
+        <rect x="-23" y="-153" width="20" height="10" rx="2" fill="var(--amber)"/>
+        <rect x="3" y="-153" width="20" height="10" rx="2" fill="var(--amber)"/>
+        <rect x="-30" y="-36" width="60" height="13" rx="3" fill="var(--amber)"/>
+        <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--amber)" stroke-width="2.2"/>
+        <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--amber)" stroke-width="1.6"/>
+        <circle r="8" fill="var(--amber)"/>
+      </g>
+    </g>
+  </svg>
+  <div class="field-row"><span class="lbl">LOCK</span><span class="val val--amber">ACQUIRING</span></div>
+  <div class="field-row"><span class="lbl">TARGET</span><span class="val">Mara Okafor</span></div>
+  <div class="field-row"><span class="lbl">ELEV</span><span class="val">-3.8&deg;</span></div>
+</div>
+
+<div class="card">
+  <div class="label">VENTRAL — LOCKED (lock_progress 1.0)</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <g transform="translate(140,140)">
+      <circle r="48" fill="none" stroke="var(--dim)" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.28"/>
+      <!-- progress arc: full circle, offset 0 -->
+      <circle r="64" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round"
+              transform="rotate(-90)" stroke-dasharray="402.1" stroke-dashoffset="0"/>
+      <g>
+        <rect x="-21" y="-148" width="16" height="120" rx="4" fill="var(--green)"/>
+        <rect x="5" y="-148" width="16" height="120" rx="4" fill="var(--green)"/>
+        <rect x="-23" y="-153" width="20" height="10" rx="2" fill="var(--green)"/>
+        <rect x="3" y="-153" width="20" height="10" rx="2" fill="var(--green)"/>
+        <rect x="-30" y="-36" width="60" height="13" rx="3" fill="var(--green)"/>
+        <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--green)" stroke-width="2.2"/>
+        <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--green)" stroke-width="1.6"/>
+        <circle r="8" fill="var(--green)"/>
+      </g>
+    </g>
+  </svg>
+  <div class="field-row"><span class="lbl">LOCK</span><span class="val val--green">LOCKED</span></div>
+  <div class="field-row"><span class="lbl">TARGET</span><span class="val">Harlan Voss</span></div>
+  <div class="field-row"><span class="lbl">ELEV</span><span class="val">+6.2&deg;</span></div>
+</div>
+
+<div class="card">
+  <div class="label">NO TARGET (lock_progress 0, elevation null)</div>
+  <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+    <g transform="translate(140,140)">
+      <circle r="48" fill="none" stroke="var(--dim)" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.28"/>
+      <circle r="64" fill="none" stroke="var(--amber)" stroke-width="4" stroke-linecap="round"
+              transform="rotate(-90)" stroke-dasharray="402.1" stroke-dashoffset="402.1" style="opacity:0"/>
+      <g>
+        <rect x="-21" y="-148" width="16" height="120" rx="4" fill="var(--dim)"/>
+        <rect x="5" y="-148" width="16" height="120" rx="4" fill="var(--dim)"/>
+        <rect x="-23" y="-153" width="20" height="10" rx="2" fill="var(--dim)"/>
+        <rect x="3" y="-153" width="20" height="10" rx="2" fill="var(--dim)"/>
+        <rect x="-30" y="-36" width="60" height="13" rx="3" fill="var(--dim)"/>
+        <rect x="-36" y="-23" width="72" height="62" rx="7" fill="#142024" stroke="var(--dim)" stroke-width="2.2"/>
+        <ellipse cx="0" cy="39" rx="32" ry="19" fill="#142024" stroke="var(--dim)" stroke-width="1.6"/>
+        <circle r="8" fill="var(--dim)"/>
+      </g>
+    </g>
+  </svg>
+  <div class="field-row"><span class="lbl">LOCK</span><span class="val val--dim">NONE</span></div>
+  <div class="field-row"><span class="lbl">TARGET</span><span class="val val--dim">NO TARGET</span></div>
+  <div class="field-row"><span class="lbl">ELEV</span><span class="val val--dim">&mdash;</span></div>
+</div>
+
+</div>
+</body></html>

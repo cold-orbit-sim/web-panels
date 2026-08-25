@@ -26,6 +26,32 @@ const ammoIndex = { dorsal: 0, ventral: 0 };
 // without snapping back across the 0/360 boundary.
 const accumBearing = { dorsal: 0, ventral: 0 };
 
+// Last known lock_progress per turret — sim-core already holds this value
+// internally on a brief aim loss, so the client just mirrors what it's sent.
+// Only falls back to the cached value if the field itself is missing;
+// reset to 0 when target_name goes null.
+const lastLockProgress = { dorsal: 0, ventral: 0 };
+// Last dash-offset actually painted — used to detect a drop and snap instead
+// of animating it (a drop means a new target, not the same acquisition easing down).
+const lastDisplayedProgress = { dorsal: 0, ventral: 0 };
+const PROGRESS_ARC_R = 64;
+const PROGRESS_ARC_C = 2 * Math.PI * PROGRESS_ARC_R;
+
+function resolveLockProgress(id, s) {
+  if (s.target_name == null) {
+    lastLockProgress[id] = 0;
+  } else if (s.lock_progress != null) {
+    lastLockProgress[id] = s.lock_progress;
+  }
+  return lastLockProgress[id];
+}
+
+function elevationText(deg) {
+  if (deg == null) return null;
+  const sign = deg > 0 ? '+' : deg < 0 ? '-' : '';
+  return `${sign}${Math.abs(deg).toFixed(1)}°`;
+}
+
 function shortestArcBearing(id, targetDeg) {
   // Shortest signed delta from accumulated angle to target, in [-180, 180].
   const current = accumBearing[id] % 360;
@@ -59,9 +85,12 @@ function buildTurretSvg(id) {
   <g transform="translate(140,140)">
     <circle r="48" fill="none" stroke="var(--dim)"
             stroke-width="1.2" stroke-dasharray="4 3" opacity="0.28"/>
-    <!-- Lock-state arc: ring that colours with lock state -->
-    <circle id="tr-lock-arc-${id}" r="56"
-            fill="none" stroke="transparent" stroke-width="5" opacity="0.45"/>
+    <!-- Lock acquisition progress arc: fills clockwise from 12 o'clock, colours with lock state -->
+    <circle id="tr-progress-arc-${id}" r="${PROGRESS_ARC_R}"
+            fill="none" stroke="var(--amber)" stroke-width="4" stroke-linecap="round"
+            transform="rotate(-90)"
+            stroke-dasharray="${PROGRESS_ARC_C}" stroke-dashoffset="${PROGRESS_ARC_C}"
+            style="opacity:0; transition:stroke-dashoffset 300ms ease, opacity 200ms ease;"/>
   </g>
 
   <!-- Rotating turret assembly — bearing 0 = barrels forward (up) -->
@@ -105,7 +134,6 @@ function updateSvgTurret(id, s) {
   if (!container) return;
   const color   = lockColor(s.lock_state, s.armed);
   const bearGrp = container.querySelector(`#tr-bearing-${id}`);
-  const lockArc = container.querySelector(`#tr-lock-arc-${id}`);
   const housing = container.querySelector(`#tr-hs-${id}`);
   const dome    = container.querySelector(`#tr-dm-${id}`);
   if (!bearGrp) return;
@@ -117,21 +145,6 @@ function updateSvgTurret(id, s) {
   });
   if (housing) housing.setAttribute('stroke', color);
   if (dome)    dome.setAttribute('stroke', color);
-
-  // Lock-state arc
-  if (lockArc) {
-    if (s.lock_state === 'locked') {
-      lockArc.setAttribute('stroke', color);
-      lockArc.removeAttribute('stroke-dasharray');
-      lockArc.setAttribute('opacity', '0.45');
-    } else if (s.lock_state === 'acquiring') {
-      lockArc.setAttribute('stroke', color);
-      lockArc.setAttribute('stroke-dasharray', '60 294');
-      lockArc.setAttribute('opacity', '0.55');
-    } else {
-      lockArc.setAttribute('stroke', 'transparent');
-    }
-  }
 
   // Bearing rotation — use accumulated angle to avoid 0/360 wrap snap
   if (s.bearing_deg != null && s.lock_state !== 'none') {
@@ -146,6 +159,28 @@ function updateSvgTurret(id, s) {
   bearGrp.style.animation = s.lock_state === 'acquiring'
     ? 'turret-acquiring-pulse 1.2s ease-in-out infinite'
     : '';
+
+  // Lock acquisition progress arc
+  const progressArc = container.querySelector(`#tr-progress-arc-${id}`);
+  if (progressArc) {
+    const progress = resolveLockProgress(id, s);
+    const visible  = !(s.lock_state === 'none' && progress === 0);
+    progressArc.style.opacity = visible ? '1' : '0';
+    progressArc.setAttribute('stroke', s.lock_state === 'locked' ? 'var(--green)' : 'var(--amber)');
+
+    const dropped = progress < lastDisplayedProgress[id];
+    if (dropped) {
+      // Snap instead of animating the ring backwards — a drop means a new
+      // target reacquiring, not the same lock easing down.
+      progressArc.style.transition = 'none';
+      progressArc.style.strokeDashoffset = `${PROGRESS_ARC_C * (1 - progress)}`;
+      progressArc.getBoundingClientRect(); // force reflow before re-enabling
+      progressArc.style.transition = 'stroke-dashoffset 300ms ease, opacity 200ms ease';
+    } else {
+      progressArc.style.strokeDashoffset = `${PROGRESS_ARC_C * (1 - progress)}`;
+    }
+    lastDisplayedProgress[id] = progress;
+  }
 }
 
 // ── Column HTML ───────────────────────────────────────────────────────────────
@@ -196,6 +231,10 @@ function statusStripHtml(id, s) {
         <span class="tr-lbl">RANGE</span>
         <span class="tr-val">${s.target_range_m} m</span>
       </div>` : ''}
+      <div class="tr-field-row">
+        <span class="tr-lbl">ELEV</span>
+        <span class="tr-val${s.elevation_deg == null ? ' tr-val--dim' : ''}">${s.elevation_deg == null ? '—' : elevationText(s.elevation_deg)}</span>
+      </div>
       <div class="tr-field-col">
         <span class="tr-lbl">AMMO — ${s.ammo_loaded || '—'}</span>
         ${ammoBarHtml(s.ammo_remaining, s.ammo_loaded)}

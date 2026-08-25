@@ -25,6 +25,8 @@ $PUB -r -t "$BASE/dorsal/state" -m '{
   "fire_mode":"lethal",
   "lock_state":"locked",
   "bearing_deg":30.0,
+  "lock_progress":1.0,
+  "elevation_deg":6.2,
   "target_name":"Harlan Voss",
   "target_class":"Light Freighter",
   "target_alliance":"Independent",
@@ -43,6 +45,8 @@ $PUB -r -t "$BASE/ventral/state" -m '{
   "fire_mode":"non_lethal",
   "lock_state":"none",
   "bearing_deg":null,
+  "lock_progress":0.0,
+  "elevation_deg":null,
   "target_name":null,
   "target_class":null,
   "target_alliance":null,
@@ -79,8 +83,12 @@ V_ALLIANCE="null"
 V_RANGE="null"
 
 LOCK_STEPS=("none" "acquiring" "acquiring" "locked" "locked" "locked")
+# lock_progress per step: ramps 0 -> 1 while acquiring, snaps to 1.0 on locked
+PROGRESS_STEPS=("0.0" "0.35" "0.7" "1.0" "1.0" "1.0")
 D_STEP=2   # start at locked
 V_STEP=0   # start at none
+D_ELEV=6.2
+V_ELEV="null"
 
 TICK=0
 
@@ -98,12 +106,17 @@ publish_dorsal() {
   local bearing_json
   [ "$D_LOCK" = "none" ] && bearing_json="null" || bearing_json=$(printf "%.1f" "$D_BEARING")
 
+  local elev_json
+  [ "$D_ELEV" = "null" ] && elev_json="null" || elev_json=$(printf "%.1f" "$D_ELEV")
+
   $PUB -r -t "$BASE/dorsal/state" -m "{
     \"turret\":\"dorsal\",
     \"armed\":$D_ARMED,
     \"fire_mode\":\"lethal\",
     \"lock_state\":\"$D_LOCK\",
     \"bearing_deg\":$bearing_json,
+    \"lock_progress\":${PROGRESS_STEPS[$D_STEP]},
+    \"elevation_deg\":$elev_json,
     \"target_name\":$target_json,
     \"target_class\":$class_json,
     \"target_alliance\":$alliance_json,
@@ -128,12 +141,17 @@ publish_ventral() {
   local bearing_json
   [ "$V_LOCK" = "none" ] && bearing_json="null" || bearing_json=$(printf "%.1f" "$V_BEARING")
 
+  local elev_json
+  [ "$V_ELEV" = "null" ] && elev_json="null" || elev_json=$(printf "%.1f" "$V_ELEV")
+
   $PUB -r -t "$BASE/ventral/state" -m "{
     \"turret\":\"ventral\",
     \"armed\":$V_ARMED,
     \"fire_mode\":\"non_lethal\",
     \"lock_state\":\"$V_LOCK\",
     \"bearing_deg\":$bearing_json,
+    \"lock_progress\":${PROGRESS_STEPS[$V_STEP]},
+    \"elevation_deg\":$elev_json,
     \"target_name\":$target_json,
     \"target_class\":$class_json,
     \"target_alliance\":$alliance_json,
@@ -184,7 +202,9 @@ while true; do
     D_STEP=$(( (D_STEP + 1) % ${#LOCK_STEPS[@]} ))
     D_LOCK="${LOCK_STEPS[$D_STEP]}"
     if [ "$D_LOCK" = "none" ]; then
-      D_TARGET="null"; D_CLASS="null"; D_ALLIANCE="null"; D_RANGE="null"
+      D_TARGET="null"; D_CLASS="null"; D_ALLIANCE="null"; D_RANGE="null"; D_ELEV="null"
+    elif [ "$D_ELEV" = "null" ]; then
+      D_ELEV=6.2
     fi
   fi
 
@@ -193,9 +213,9 @@ while true; do
     V_STEP=$(( (V_STEP + 1) % ${#LOCK_STEPS[@]} ))
     V_LOCK="${LOCK_STEPS[$V_STEP]}"
     if [ "$V_LOCK" = "acquiring" ] && [ "$V_TARGET" = "null" ]; then
-      V_TARGET="Mara Okafor"; V_CLASS="Hauler"; V_ALLIANCE="Syndicate"; V_RANGE=1240
+      V_TARGET="Mara Okafor"; V_CLASS="Hauler"; V_ALLIANCE="Syndicate"; V_RANGE=1240; V_ELEV=-3.8
     elif [ "$V_LOCK" = "none" ]; then
-      V_TARGET="null"; V_CLASS="null"; V_ALLIANCE="null"; V_RANGE="null"
+      V_TARGET="null"; V_CLASS="null"; V_ALLIANCE="null"; V_RANGE="null"; V_ELEV="null"
     fi
   fi
 
