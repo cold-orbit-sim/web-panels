@@ -162,16 +162,16 @@ function updateSvgTurret(id, s) {
   COLORED_PARTS.forEach((p) => {
     const el = container.querySelector(`#tr-${p}-${id}`);
     if (el) {
-      if (!lowAmmo) el.setAttribute('fill', color);
+      el.setAttribute('fill', lowAmmo ? 'var(--red)' : color);
       el.classList.toggle('tr-low-ammo-flash', lowAmmo);
     }
   });
   if (housing) {
-    if (!lowAmmo) housing.setAttribute('stroke', color);
+    housing.setAttribute('stroke', lowAmmo ? 'var(--red)' : color);
     housing.classList.toggle('tr-low-ammo-flash-stroke', lowAmmo);
   }
   if (dome) {
-    if (!lowAmmo) dome.setAttribute('stroke', color);
+    dome.setAttribute('stroke', lowAmmo ? 'var(--red)' : color);
     dome.classList.toggle('tr-low-ammo-flash-stroke', lowAmmo);
   }
 

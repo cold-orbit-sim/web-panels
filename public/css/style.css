@@ -1817,17 +1817,15 @@ html, body {
   100% { filter: brightness(1); }
 }
 
-/* Low/zero ammo — turret graphic flashes red instead of its normal lock colour */
-.tr-low-ammo-flash { animation: tr-low-ammo-flash-fill 0.8s step-end infinite; }
-@keyframes tr-low-ammo-flash-fill {
-  0%, 49%   { fill: var(--red); }
-  50%, 100% { fill: var(--dim); }
+/* Low/zero ammo — turret parts go solid red + pulse opacity for attention.
+   Always red (fill/stroke: var(--red)) so state is unambiguous on page load;
+   opacity pulse is secondary visual feedback (not the only indicator). */
+.tr-low-ammo-flash { fill: var(--red); animation: tr-low-ammo-pulse 1s ease-in-out infinite; }
+@keyframes tr-low-ammo-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
 }
-.tr-low-ammo-flash-stroke { animation: tr-low-ammo-flash-stroke 0.8s step-end infinite; }
-@keyframes tr-low-ammo-flash-stroke {
-  0%, 49%   { stroke: var(--red); }
-  50%, 100% { stroke: var(--dim); }
-}
+.tr-low-ammo-flash-stroke { stroke: var(--red); animation: tr-low-ammo-pulse 1s ease-in-out infinite; }
 
 .tr-ammo-count {
   font-size: clamp(9px, 1.1vh, 12px);
