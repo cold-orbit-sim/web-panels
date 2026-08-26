@@ -113,17 +113,21 @@ function buildTurretSvg(id) {
     <g id="tr-bearing-${id}"
        style="transform-origin:0px 0px; transition:transform 200ms linear;">
 
-      <!-- Left barrel -->
-      <rect id="tr-bl-${id}" x="-21" y="-148" width="16" height="120" rx="4"
-            fill="var(--dim)"/>
-      <!-- Right barrel -->
-      <rect id="tr-br-${id}" x="5" y="-148" width="16" height="120" rx="4"
-            fill="var(--dim)"/>
-      <!-- Muzzle brakes -->
-      <rect id="tr-ml-${id}" x="-23" y="-153" width="20" height="10" rx="2"
-            fill="var(--dim)"/>
-      <rect id="tr-mr-${id}" x="3" y="-153" width="20" height="10" rx="2"
-            fill="var(--dim)"/>
+      <!-- Barrel group — scaleY = cos(elevation_deg), pivot at mantlet junction -->
+      <g id="tr-barrels-${id}"
+         style="transform-origin:0px -28px; transition:transform 200ms linear;">
+        <!-- Left barrel -->
+        <rect id="tr-bl-${id}" x="-21" y="-148" width="16" height="120" rx="4"
+              fill="var(--dim)"/>
+        <!-- Right barrel -->
+        <rect id="tr-br-${id}" x="5" y="-148" width="16" height="120" rx="4"
+              fill="var(--dim)"/>
+        <!-- Muzzle brakes -->
+        <rect id="tr-ml-${id}" x="-23" y="-153" width="20" height="10" rx="2"
+              fill="var(--dim)"/>
+        <rect id="tr-mr-${id}" x="3" y="-153" width="20" height="10" rx="2"
+              fill="var(--dim)"/>
+      </g>
       <!-- Mantlet -->
       <rect id="tr-mt-${id}" x="-30" y="-36" width="60" height="13" rx="3"
             fill="var(--dim)"/>
@@ -175,13 +179,18 @@ function updateSvgTurret(id, s) {
     dome.classList.toggle('tr-low-ammo-flash-stroke', lowAmmo);
   }
 
-  // Bearing rotation — use accumulated angle to avoid 0/360 wrap snap
-  if (s.bearing_deg != null && s.lock_state !== 'none') {
+  // Bearing rotation — always reflect reality regardless of lock state
+  if (s.bearing_deg != null) {
     const angle = shortestArcBearing(id, s.bearing_deg);
     bearGrp.style.transform = `rotate(${angle}deg)`;
-    bearGrp.style.opacity   = '1';
-  } else {
-    bearGrp.style.opacity = '0.35';
+  }
+  bearGrp.style.opacity = '1';
+
+  // Elevation — barrel length = cos(elevation_deg): full at 0°, zero at 90°
+  const barrelsGrp = container.querySelector(`#tr-barrels-${id}`);
+  if (barrelsGrp && s.elevation_deg != null) {
+    const scale = Math.max(0.12, Math.cos(s.elevation_deg * Math.PI / 180));
+    barrelsGrp.style.transform = `scaleY(${scale})`;
   }
 
   // Acquiring pulse
