@@ -325,12 +325,12 @@ function popupHtml(id, s) {
                   : s.heat > 0.5 ? 'var(--amber)'
                   : 'var(--green)';
 
-  const ammoRows = s.ammo_remaining && s.ammo_remaining.length
-    ? s.ammo_remaining.map((a) => `
-        <div class="tr-detail-ammo-row">
-          <span class="tr-detail-ammo-type">${a.type}</span>
-          <span class="tr-detail-ammo-count">${a.max ? `${a.count} / ${a.max}` : a.count}</span>
-        </div>`).join('')
+  const loaded = s.ammo_remaining && s.ammo_remaining.find((a) => a.type === s.ammo_loaded);
+  const ammoRow = loaded
+    ? `<div class="tr-detail-ammo-row">
+         <span class="tr-detail-ammo-type">${loaded.type}</span>
+         <span class="tr-detail-ammo-count">${loaded.max ? `${loaded.count} / ${loaded.max}` : loaded.count}</span>
+       </div>`
     : '<div class="tr-detail-ammo-row"><span class="tr-detail-ammo-type">—</span></div>';
 
   return `
@@ -371,7 +371,7 @@ function popupHtml(id, s) {
       : ''}
 
     <div class="tr-detail-section">AMMO${s.reloading ? ' <span class="tr-detail-note">RELOADING</span>' : ''}</div>
-    ${ammoRows}
+    ${ammoRow}
 
     <div class="tr-detail-section">
       HEAT <span class="tr-detail-note">MOCK — not modelled in sim-core</span>

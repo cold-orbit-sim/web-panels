@@ -33,8 +33,7 @@ $PUB -r -t "$BASE/dorsal/state" -m '{
   "target_range_m":840,
   "ammo_loaded":"Kinetic Slug",
   "ammo_remaining":[
-    {"type":"Kinetic Slug","count":142,"max":170},
-    {"type":"EMP Round","count":28,"max":40}
+    {"type":"Kinetic Slug","count":142,"max":170}
   ],
   "heat":0.34
 }'
@@ -51,11 +50,9 @@ $PUB -r -t "$BASE/ventral/state" -m '{
   "target_class":null,
   "target_alliance":null,
   "target_range_m":null,
-  "ammo_loaded":"EMP Round",
+  "ammo_loaded":"Kinetic Slug",
   "ammo_remaining":[
-    {"type":"Kinetic Slug","count":142,"max":170},
-    {"type":"EMP Round","count":28,"max":40},
-    {"type":"Tracer","count":60,"max":100}
+    {"type":"Kinetic Slug","count":60,"max":170}
   ],
   "heat":0.05
 }'
@@ -140,8 +137,7 @@ publish_dorsal() {
     \"target_range_m\":$range_json,
     \"ammo_loaded\":\"Kinetic Slug\",
     \"ammo_remaining\":[
-      {\"type\":\"Kinetic Slug\",\"count\":$D_KINETIC_COUNT,\"max\":$D_KINETIC_MAX},
-      {\"type\":\"EMP Round\",\"count\":28,\"max\":40}
+      {\"type\":\"Kinetic Slug\",\"count\":$D_KINETIC_COUNT,\"max\":$D_KINETIC_MAX}
     ],
     \"heat\":$(printf "%.2f" "$D_HEAT"),
     \"reloading\":$D_RELOADING,
@@ -175,11 +171,9 @@ publish_ventral() {
     \"target_class\":$class_json,
     \"target_alliance\":$alliance_json,
     \"target_range_m\":$range_json,
-    \"ammo_loaded\":\"EMP Round\",
+    \"ammo_loaded\":\"Kinetic Slug\",
     \"ammo_remaining\":[
-      {\"type\":\"Kinetic Slug\",\"count\":142,\"max\":170},
-      {\"type\":\"EMP Round\",\"count\":28,\"max\":40},
-      {\"type\":\"Tracer\",\"count\":60,\"max\":100}
+      {\"type\":\"Kinetic Slug\",\"count\":60,\"max\":170}
     ],
     \"heat\":$(printf "%.2f" "$V_HEAT"),
     \"reloading\":false,
