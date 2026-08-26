@@ -1,25 +1,11 @@
 // Turrets status view — two big turret diagrams side by side (dorsal | ventral).
 // Each column: lock/armed badges → rotating SVG turret → compact status strip.
-// On tap: a centred popup overlay shows full detail + heat bar + ammo selector
-//   (loadout mode). Backdrop tap closes it. Same column tap toggles it.
-// Loadout mode: ammo selector in popup when setTurretsLoadoutMode(true).
-
-// MOCK — replace with sim-core data when available.
-const AMMO_TYPES = [
-  { type: 'Kinetic Slug', desc: 'Standard kinetic penetrator' },
-  { type: 'EMP Round',    desc: 'Disables systems, less hull damage' },
-  { type: 'Incendiary',   desc: 'Area denial' },
-  { type: 'Tracer',       desc: 'Reduces targeting time' },
-  { type: 'Flechette',    desc: 'Close range spread' },
-];
+// On tap: a centred popup overlay shows full detail + heat bar. Backdrop tap
+// closes it. Same column tap toggles it.
 
 const state = { dorsal: null, ventral: null };
 
-let openDetail      = null;   // null | 'dorsal' | 'ventral'
-let loadoutUnlocked = false;
-let publishAmmo     = null;   // (turretId, { type }) => void
-
-const ammoIndex = { dorsal: 0, ventral: 0 };
+let openDetail = null;   // null | 'dorsal' | 'ventral'
 
 // Accumulated bearing angles — never clamped to [0, 360].
 // CSS transitions between these, so the turret always takes the shortest arc
@@ -328,21 +314,6 @@ function colHtml(id, s) {
 
 // ── Popup HTML ────────────────────────────────────────────────────────────────
 
-function ammoSelectorHtml(id) {
-  const cur = AMMO_TYPES[ammoIndex[id]];
-  return `
-    <div class="tr-ammo-sel">
-      <div class="tr-detail-section">AMMO SELECTION <span class="tr-detail-note">MOCK</span></div>
-      <div class="tr-ammo-sel-row">
-        <button class="tr-ammo-prev" data-turret="${id}">&#9664;</button>
-        <span class="tr-ammo-name">${cur.type}</span>
-        <button class="tr-ammo-next" data-turret="${id}">&#9654;</button>
-      </div>
-      <div class="tr-ammo-desc">${cur.desc}</div>
-      <button class="tr-ammo-confirm" data-turret="${id}">CONFIRM</button>
-    </div>`;
-}
-
 function popupHtml(id, s) {
   if (!s) return `<div class="tr-popup-no-data">NO DATA</div>`;
 
@@ -402,8 +373,6 @@ function popupHtml(id, s) {
     <div class="tr-detail-section">AMMO${s.reloading ? ' <span class="tr-detail-note">RELOADING</span>' : ''}</div>
     ${ammoRows}
 
-    ${loadoutUnlocked ? ammoSelectorHtml(id) : ''}
-
     <div class="tr-detail-section">
       HEAT <span class="tr-detail-note">MOCK — not modelled in sim-core</span>
     </div>
@@ -431,29 +400,6 @@ function bindPopupButtons(id) {
   const closeBtn = document.getElementById('tr-popup-close');
   if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closePopup(); });
 
-  popupEl.querySelectorAll('.tr-ammo-prev').forEach((btn) => btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    ammoIndex[id] = (ammoIndex[id] - 1 + AMMO_TYPES.length) % AMMO_TYPES.length;
-    popupEl.innerHTML = popupHtml(id, state[id]);
-    bindPopupButtons(id);
-  }));
-  popupEl.querySelectorAll('.tr-ammo-next').forEach((btn) => btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    ammoIndex[id] = (ammoIndex[id] + 1) % AMMO_TYPES.length;
-    popupEl.innerHTML = popupHtml(id, state[id]);
-    bindPopupButtons(id);
-  }));
-
-  const confirmBtn = popupEl.querySelector('.tr-ammo-confirm');
-  if (confirmBtn) confirmBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (publishAmmo) publishAmmo(id, { type: AMMO_TYPES[ammoIndex[id]].type });
-    confirmBtn.textContent = 'SENT ✓';
-    confirmBtn.disabled = true;
-    setTimeout(() => {
-      if (confirmBtn) { confirmBtn.textContent = 'CONFIRM'; confirmBtn.disabled = false; }
-    }, 1500);
-  });
 }
 
 // ── Column partial updaters ───────────────────────────────────────────────────
@@ -479,9 +425,8 @@ function updateColPartial(id, s) {
 
 // ── init ──────────────────────────────────────────────────────────────────────
 
-export function initTurrets(el, onAmmoConfirm) {
-  container   = el;
-  publishAmmo = onAmmoConfirm;
+export function initTurrets(el) {
+  container = el;
 
   container.innerHTML = `
 <div class="tr-inner">
@@ -520,15 +465,6 @@ export function initTurrets(el, onAmmoConfirm) {
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
-
-export function setTurretsLoadoutMode(unlocked) {
-  loadoutUnlocked = unlocked;
-  // Refresh popup if open
-  if (openDetail) {
-    popupEl.innerHTML = popupHtml(openDetail, state[openDetail]);
-    bindPopupButtons(openDetail);
-  }
-}
 
 export function handleTurretState(turretId, data) {
   if (turretId !== 'dorsal' && turretId !== 'ventral') return;

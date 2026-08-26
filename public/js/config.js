@@ -44,9 +44,6 @@ export const TOPICS = {
   // Turret state — wildcard subscription; two topics, one per turret.
   // See docs/turrets-mqtt-contract.md for the full payload shape.
   turretState: "coldorbit/output/turrets/+/state",
-  // Client publishes here to confirm ammo type selection in loadout mode.
-  // Full path: coldorbit/input/turrets/<dorsal|ventral>/ammo
-  turretAmmoBase: "coldorbit/input/turrets",
   // Missile tube state — wildcard subscription; four topics, one per tube.
   // See HANDBACK.md (missiles session) for the full payload shape.
   // Tubes: fore_port | fore_starboard | aft_port | aft_starboard

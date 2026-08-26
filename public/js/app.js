@@ -9,7 +9,7 @@ import { initComms, handleCommsLog, handleCommsTargets } from "./views/comms.js"
 import { initAlerts, handleAlerts } from "./views/alerts.js";
 import { initPropulsion, handlePropulsionState } from "./views/propulsion.js";
 import { initFtl, handleFtlState } from "./views/ftl.js";
-import { initTurrets, handleTurretState, setTurretsLoadoutMode } from "./views/turrets.js";
+import { initTurrets, handleTurretState } from "./views/turrets.js";
 import { initMissiles, handleMissileState, setMissilesLoadoutMode } from "./views/missiles.js";
 import { initMap, handleFtlTarget, handleFtlSystem } from "./views/map.js";
 
@@ -47,7 +47,6 @@ function setMode(mode) {
 function setLoadoutMode(unlocked) {
   const wasUnlocked = loadoutUnlocked;
   loadoutUnlocked = unlocked;
-  setTurretsLoadoutMode(unlocked);
   setMissilesLoadoutMode(unlocked);
   if (unlocked) {
     viewEls.forEach((el) => el.classList.remove("active"));
@@ -66,13 +65,7 @@ initAlerts(document.querySelector(".topbar"));
 initEngineering(document.getElementById("view-engineering"));
 initPropulsion(document.getElementById("view-propulsion"));
 initFtl(document.getElementById("view-ftl"));
-initTurrets(document.getElementById("view-turrets"), (turretId, payload) => {
-  client.publish(
-    `${TOPICS.turretAmmoBase}/${turretId}/ammo`,
-    JSON.stringify(payload),
-    { qos: 1, retain: true },
-  );
-});
+initTurrets(document.getElementById("view-turrets"));
 initMissiles(document.getElementById("view-missiles"), (tubeId, payload) => {
   client.publish(
     `${TOPICS.missileTypeBase}/${tubeId}/type`,
