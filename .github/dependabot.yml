@@ -5,6 +5,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    assignees:
+      - "Pingue"
     groups:
       actions:
         patterns: ["*"]
